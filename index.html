@@ -9,43 +9,127 @@
 <meta name="theme-color" content="#ff5fa2">
 
 <style>
-body{font-family:Arial;background:#ffe4ef;text-align:center;padding:20px}
-input,button{width:100%;padding:12px;margin:8px 0}
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  font-family:Arial;
+  background:linear-gradient(160deg,#ffd6e8,#fff6fa);
+  overflow-x:hidden;
+}
+
+.app{
+  max-width:520px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{text-align:center;margin-bottom:10px}
+
+.card{
+  background:white;
+  border-radius:25px;
+  padding:20px;
+  margin-bottom:15px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.1);
+}
+
+input,textarea{
+  width:100%;
+  padding:12px;
+  margin-top:6px;
+  border-radius:12px;
+  border:1.5px solid pink;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  margin-top:12px;
+  border:none;
+  border-radius:14px;
+  background:#ff5fa2;
+  color:white;
+  font-weight:bold;
+}
+
+.pred{
+  background:#fff0f7;
+  padding:12px;
+  border-radius:12px;
+  margin-top:8px;
+}
 </style>
 </head>
 
 <body>
 
+<div class="app">
 <h1>🌸 יומן מחזור</h1>
 
+<div class="card">
+<label>📅 תאריך תחילת וסת</label>
 <input type="date" id="date">
-<input type="number" id="days" value="5">
-<button onclick="add()">שמור</button>
 
-<p id="out"></p>
+<label>🩸 מספר ימים</label>
+<input type="number" id="days" value="5">
+
+<label>📝 הערות</label>
+<textarea id="notes"></textarea>
+
+<button onclick="add()">שמור וחישוב 💗</button>
+</div>
+
+<div class="card">
+<h3>📊 תחזית</h3>
+<div id="prediction">אין נתונים</div>
+</div>
+
+<div class="card">
+<h3>📅 לוח שנה</h3>
+<div id="calendar"></div>
+</div>
+
+</div>
 
 <script>
-const KEY="data";
+const KEY="cycle";
 
 function get(){return JSON.parse(localStorage.getItem(KEY)||"[]")}
 function set(d){localStorage.setItem(KEY,JSON.stringify(d))}
 
 function add(){
   const date=document.getElementById("date").value;
-  if(!date)return;
+  const days=Number(document.getElementById("days").value);
+  const notes=document.getElementById("notes").value;
 
-  const d=get();
-  d.unshift({date});
-  set(d);
+  if(!date)return alert("בחר תאריך");
+
+  const data=get();
+  data.unshift({date,days,notes});
+  set(data);
   render();
 }
 
 function render(){
-  const d=get();
-  if(!d.length)return;
-  let next=new Date(d[0].date);
+  const data=get();
+  const p=document.getElementById("prediction");
+
+  if(!data.length){
+    p.innerHTML="הכנס נתונים כדי לראות תחזית";
+    return;
+  }
+
+  const last=new Date(data[0].date);
+  const next=new Date(last);
   next.setDate(next.getDate()+28);
-  document.getElementById("out").innerText="מחזור הבא: "+next.toLocaleDateString("he-IL");
+
+  const ovu=new Date(next);
+  ovu.setDate(ovu.getDate()-14);
+
+  p.innerHTML=`
+    <div class="pred">מחזור הבא: ${next.toLocaleDateString("he-IL")}</div>
+    <div class="pred">ביוץ: ${ovu.toLocaleDateString("he-IL")}</div>
+  `;
 }
 
 render();
