@@ -1,0 +1,15 @@
+{
+  "name": "יומן מחזור",
+  "short_name": "מחזור",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffe4ef",
+  "theme_color": "#ff5fa2",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2909/2909765.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
