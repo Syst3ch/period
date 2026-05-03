@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>יומן מחזור</title>
+
+<style>
+body {
+  margin:0;
+  font-family:Arial;
+  background:linear-gradient(135deg,#ffe1ef,#ffd1dc,#fff5fa);
+}
+.app {max-width:520px;margin:auto;padding:20px;}
+h1 {text-align:center;}
+
+.card {
+  background:white;
+  border-radius:20px;
+  padding:15px;
+  margin-bottom:15px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.1);
+}
+
+input,textarea {
+  width:100%;
+  padding:10px;
+  margin-top:5px;
+  border-radius:10px;
+  border:1px solid pink;
+}
+
+button {
+  width:100%;
+  margin-top:10px;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:pink;
+  color:white;
+  font-weight:bold;
+}
+
+.entry {
+  background:#fff0f7;
+  padding:10px;
+  border-radius:10px;
+  margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+<h1>🌸 יומן מחזור</h1>
+
+<div class="card">
+<input type="date" id="date">
+<input type="number" id="days" value="5">
+<textarea id="notes" placeholder="הערות"></textarea>
+<button onclick="add()">שמור</button>
+</div>
+
+<div class="card">
+<h3>תחזית</h3>
+<p id="prediction">אין נתונים</p>
+</div>
+
+<div class="card">
+<h3>היסטוריה</h3>
+<div id="list"></div>
+</div>
+
+</div>
+
+<script>
+const KEY="cycle";
+
+function get(){return JSON.parse(localStorage.getItem(KEY)||"[]")}
+function set(d){localStorage.setItem(KEY,JSON.stringify(d))}
+
+function add(){
+  const date=document.getElementById("date").value;
+  const days=Number(document.getElementById("days").value);
+  const notes=document.getElementById("notes").value;
+
+  if(!date) return alert("חסר תאריך");
+
+  const data=get();
+  data.unshift({id:Date.now(),date,days,notes});
+  set(data);
+  render();
+}
+
+function avgCycle(data){
+  if(data.length<2) return 28;
+
+  let diffs=[];
+  for(let i=0;i<data.length-1;i++){
+    const d1=new Date(data[i].date);
+    const d2=new Date(data[i+1].date);
+    diffs.push((d1-d2)/(1000*60*60*24));
+  }
+  return Math.round(diffs.reduce((a,b)=>a+b,0)/diffs.length);
+}
+
+function render(){
+  const data=get();
+  const list=document.getElementById("list");
+  const pred=document.getElementById("prediction");
+
+  list.innerHTML="";
+
+  if(!data.length){
+    pred.textContent="אין נתונים";
+    return;
+  }
+
+  const cycle=avgCycle(data);
+  const last=new Date(data[0].date);
+
+  const next=new Date(last);
+  next.setDate(next.getDate()+cycle);
+
+  const ovulation=new Date(next);
+  ovulation.setDate(ovulation.getDate()-14);
+
+  const fertileStart=new Date(ovulation);
+  fertileStart.setDate(fertileStart.getDate()-5);
+
+  const fertileEnd=new Date(ovulation);
+  fertileEnd.setDate(fertileEnd.getDate()+1);
+
+  pred.innerHTML=
+    "מחזור הבא: "+next.toLocaleDateString("he-IL")+"<br>"+
+    "ביוץ משוער: "+ovulation.toLocaleDateString("he-IL")+"<br>"+
+    "חלון פוריות: "+
+    fertileStart.toLocaleDateString("he-IL")+" - "+
+    fertileEnd.toLocaleDateString("he-IL");
+
+  data.forEach(e=>{
+    const div=document.createElement("div");
+    div.className="entry";
+    div.innerHTML=
+      new Date(e.date).toLocaleDateString("he-IL")+"<br>"+
+      e.days+" ימים<br>"+
+      (e.notes||"")+
+      "<br><button onclick='del("+e.id+")'>מחק</button>";
+    list.appendChild(div);
+  });
+}
+
+function del(id){
+  set(get().filter(x=>x.id!==id));
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>
