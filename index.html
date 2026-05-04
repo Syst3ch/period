@@ -80,12 +80,6 @@
             background: #fff7fb;
             font-size: 16px;
             outline: none;
-            transition: border-color 0.3s;
-        }
-
-        input:focus,
-        textarea:focus {
-            border-color: #ff4f9b;
         }
 
         textarea {
@@ -104,11 +98,6 @@
             font-size: 17px;
             font-weight: bold;
             cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        button:active {
-            opacity: 0.8;
         }
 
         .secondary {
@@ -245,19 +234,10 @@
             font-size: 12px;
             color: #86526b;
             text-align: center;
-            line-height: 1.6;
             margin-top: 20px;
         }
 
         @media(max-width:390px) {
-            .app {
-                padding: 14px
-            }
-
-            .header h1 {
-                font-size: 31px
-            }
-
             .grid {
                 grid-template-columns: 1fr
             }
@@ -269,18 +249,15 @@
     <div class="app">
         <div class="header">
             <h1>🌸 יומן מחזור</h1>
-            <p>רישום וסת, חיזוי מחזור הבא, ביוץ וחלון פוריות</p>
+            <p>רישום וסת, חיזוי מחזור הבא וחלון פוריות</p>
         </div>
 
-        <!-- טופס הזנה -->
         <div class="card">
             <div class="title">הוספת רישום חדש</div>
             <label>📅 תאריך תחילת הווסת</label>
-            <div class="hint">בחרי את היום הראשון של הדימום</div>
             <input type="date" id="date">
 
             <label>🩸 מספר ימי דימום</label>
-            <div class="hint">לדוגמה: 4 או 5 ימים</div>
             <input type="number" id="days" value="5" min="1" max="14">
 
             <label>📝 הערות</label>
@@ -289,36 +266,29 @@
             <button onclick="addEntry()">שמור וחשב תחזית 💗</button>
         </div>
 
-        <!-- תחזית -->
         <div class="card">
             <div class="title">תחזית אישית</div>
-            <div id="prediction" class="empty-text">
-                אין נתונים עדיין<br>הכניסי תאריך וסת כדי לקבל תחזית
-            </div>
+            <div id="prediction" class="empty-text">אין נתונים עדיין</div>
         </div>
 
-        <!-- לוח שנה -->
         <div class="card">
             <div class="calendar-head">
                 <button class="secondary" onclick="changeMonth(-1)">חודש קודם</button>
                 <strong id="monthTitle"></strong>
                 <button class="secondary" onclick="changeMonth(1)">חודש הבא</button>
             </div>
-
             <div class="weekdays">
                 <div>א</div><div>ב</div><div>ג</div><div>ד</div><div>ה</div><div>ו</div><div>ש</div>
             </div>
             <div id="calendar" class="calendar"></div>
-
             <div class="legend">
-                <div>🩸 ורוד חזק - ימי וסת</div>
-                <div>💜 סגול - ביוץ</div>
-                <div>🌸 ורוד בהיר - חלון פוריות</div>
-                <div>⭕ מסגרת - היום</div>
+                <div>🩸 ימי וסת</div>
+                <div>💜 ביוץ</div>
+                <div>🌸 חלון פוריות</div>
+                <div>⭕ היום</div>
             </div>
         </div>
 
-        <!-- היסטוריה -->
         <div class="card">
             <div class="title">היסטוריית רישומים</div>
             <div id="list" class="empty-text">עדיין אין רישומים</div>
@@ -336,7 +306,6 @@
             render();
         });
 
-        // פונקציות עזר
         function getData() { return JSON.parse(localStorage.getItem(KEY) || "[]") }
         function saveData(data) { localStorage.setItem(KEY, JSON.stringify(data)) }
         function addDays(date, days) {
@@ -346,9 +315,7 @@
         }
         function formatDate(date) { return date.toLocaleDateString("he-IL") }
         function sameDay(a, b) {
-            return a.getFullYear() === b.getFullYear() &&
-                a.getMonth() === b.getMonth() &&
-                a.getDate() === b.getDate();
+            return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
         }
         function isBetween(date, start, end) {
             const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -357,15 +324,13 @@
             return d >= s && d <= e;
         }
 
-        // ניהול נתונים
         function addEntry() {
             const date = document.getElementById("date").value;
             const days = Number(document.getElementById("days").value);
             const notes = document.getElementById("notes").value.trim();
 
             if (!date) return alert("בחרי תאריך תחילת וסת");
-            if (!days || days < 1 || days > 14) return alert("מספר ימי הדימום צריך להיות בין 1 ל-14");
-
+            
             const data = getData();
             data.unshift({ id: Date.now(), date, days, notes });
             data.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -373,6 +338,9 @@
             saveData(data);
             document.getElementById("notes").value = "";
             render();
+
+            // ההתראה שביקשת
+            alert("הנתונים נשמרו בהצלחה! ✨");
         }
 
         function deleteEntry(id) {
@@ -381,51 +349,36 @@
             render();
         }
 
-        // חישובים
         function avgCycle(data) {
             if (data.length < 2) return 28;
             let gaps = [];
             for (let i = 0; i < data.length - 1; i++) {
-                const newer = new Date(data[i].date);
-                const older = new Date(data[i + 1].date);
-                const diff = Math.round((newer - older) / 86400000);
+                const diff = Math.round((new Date(data[i].date) - new Date(data[i+1].date)) / 86400000);
                 if (diff >= 21 && diff <= 45) gaps.push(diff);
             }
-            if (!gaps.length) return 28;
-            return Math.round(gaps.reduce((a, b) => a + b, 0) / gaps.length);
+            return gaps.length ? Math.round(gaps.reduce((a, b) => a + b, 0) / gaps.length) : 28;
         }
 
         function getPredictions() {
             const data = getData();
             if (!data.length) return null;
-
             const cycle = avgCycle(data);
             const last = new Date(data[0].date);
             const nextPeriod = addDays(last, cycle);
             const ovulation = addDays(nextPeriod, -14);
-            const fertileStart = addDays(ovulation, -5);
-            const fertileEnd = addDays(ovulation, 1);
-
-            return { cycle, nextPeriod, ovulation, fertileStart, fertileEnd };
+            return { cycle, nextPeriod, ovulation, fertileStart: addDays(ovulation, -5), fertileEnd: addDays(ovulation, 1) };
         }
 
-        // רינדור ממשק
         function renderPrediction() {
             const prediction = document.getElementById("prediction");
             const pred = getPredictions();
-
-            if (!pred) {
-                prediction.className = "empty-text";
-                prediction.innerHTML = "אין נתונים עדיין<br>הכניסי תאריך וסת כדי לקבל תחזית";
-                return;
-            }
-
+            if (!pred) return;
             prediction.className = "grid";
             prediction.innerHTML = `
-                <div class="box"><strong>🌺 המחזור הבא צפוי</strong><span>${formatDate(pred.nextPeriod)}</span></div>
+                <div class="box"><strong>🌺 המחזור הבא</strong><span>${formatDate(pred.nextPeriod)}</span></div>
                 <div class="box"><strong>💜 ביוץ משוער</strong><span>${formatDate(pred.ovulation)}</span></div>
-                <div class="box"><strong>🌸 חלון פוריות</strong><span>${formatDate(pred.fertileStart)} - ${formatDate(pred.fertileEnd)}</span></div>
-                <div class="box"><strong>📊 אורך מחזור ממוצע</strong><span>${pred.cycle} ימים</span></div>`;
+                <div class="box"><strong>🌸 חלון פוריות</strong><span>${formatDate(pred.fertileStart)}</span></div>
+                <div class="box"><strong>📊 ממוצע מחזור</strong><span>${pred.cycle} ימים</span></div>`;
         }
 
         function changeMonth(step) {
@@ -437,44 +390,34 @@
             const data = getData();
             const pred = getPredictions();
             const calendar = document.getElementById("calendar");
-            const monthTitle = document.getElementById("monthTitle");
-
             calendar.innerHTML = "";
             const year = viewDate.getFullYear();
             const month = viewDate.getMonth();
+            document.getElementById("monthTitle").textContent = viewDate.toLocaleDateString("he-IL", { month: "long", year: "numeric" });
 
-            monthTitle.textContent = viewDate.toLocaleDateString("he-IL", { month: "long", year: "numeric" });
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-
-            // ימים ריקים בתחילת חודש
-            for (let i = 0; i < firstDay.getDay(); i++) {
+            for (let i = 0; i < firstDay; i++) {
                 const empty = document.createElement("div");
                 empty.className = "day empty";
                 calendar.appendChild(empty);
             }
 
-            // ימי החודש
-            for (let day = 1; day <= lastDay.getDate(); day++) {
+            for (let day = 1; day <= daysInMonth; day++) {
                 const current = new Date(year, month, day);
                 const div = document.createElement("div");
                 div.className = "day";
                 div.textContent = day;
 
                 if (sameDay(current, new Date())) div.classList.add("today");
-
                 if (pred) {
                     if (isBetween(current, pred.fertileStart, pred.fertileEnd)) div.classList.add("fertile");
                     if (sameDay(current, pred.ovulation)) div.classList.add("ovulation");
                 }
-
                 data.forEach(entry => {
-                    const start = new Date(entry.date);
-                    const end = addDays(start, Number(entry.days) - 1);
-                    if (isBetween(current, start, end)) div.classList.add("period");
+                    if (isBetween(current, new Date(entry.date), addDays(new Date(entry.date), entry.days - 1))) div.classList.add("period");
                 });
-
                 calendar.appendChild(div);
             }
         }
@@ -482,13 +425,7 @@
         function renderList() {
             const data = getData();
             const list = document.getElementById("list");
-
-            if (!data.length) {
-                list.className = "empty-text";
-                list.innerHTML = "עדיין אין רישומים";
-                return;
-            }
-
+            if (!data.length) return;
             list.className = "";
             list.innerHTML = "";
             data.forEach(entry => {
@@ -496,9 +433,8 @@
                 div.className = "entry";
                 div.innerHTML = `
                     <strong>📅 ${formatDate(new Date(entry.date))}</strong><br>
-                    🩸 משך דימום: ${entry.days} ימים<br>
-                    📝 ${entry.notes || "אין הערות"}
-                    <button class="danger" onclick="deleteEntry(${entry.id})">מחק רישום</button>`;
+                    🩸 משך: ${entry.days} ימים | 📝 ${entry.notes || "אין הערות"}
+                    <button class="danger" onclick="deleteEntry(${entry.id})">מחק</button>`;
                 list.appendChild(div);
             });
         }
