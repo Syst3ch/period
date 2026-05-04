@@ -1,256 +1,514 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>יומן מחזור</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#ff5fa2">
 
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial;background:linear-gradient(160deg,#ffd6e8,#fff6fa);color:#351126}
-.app{max-width:540px;margin:auto;padding:18px 18px 40px}
-.header{text-align:center;padding:25px 10px}
-.header h1{font-size:36px}
-.header p{color:#86526b;margin-top:8px}
-.card{background:white;border-radius:28px;padding:20px;margin-bottom:18px;box-shadow:0 14px 35px rgba(190,70,120,.16);overflow:hidden}
-.title{font-size:22px;font-weight:bold;margin-bottom:14px}
-label{display:block;margin-top:14px;font-weight:bold}
-.hint{color:#946078;font-size:13px;margin-top:4px}
-input,textarea{width:100%;padding:14px;margin-top:8px;border:1.5px solid #f3aacb;border-radius:18px;background:#fff7fb;font-size:16px}
-textarea{min-height:80px;resize:vertical}
-button{width:100%;border:0;border-radius:18px;padding:15px;margin-top:16px;background:linear-gradient(135deg,#ff4f9b,#ff91c2);color:white;font-size:17px;font-weight:bold}
-.secondary{background:#fff0f7;color:#9a315f;border:2px solid #ffc7df;width:auto;margin:0;padding:8px 13px;font-size:14px}
-.danger{background:#d9366f;padding:10px;font-size:14px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.box{background:#fff1f7;border:2px solid #ffd1e3;border-radius:20px;padding:14px}
-.box strong{display:block;color:#873557;font-size:14px}
-.box span{display:block;font-size:20px;font-weight:bold;margin-top:5px}
-.calendar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.weekdays,.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
-.weekdays div{font-size:12px;color:#8d5d73;font-weight:bold}
-.day{min-height:43px;border-radius:14px;background:#fff7fb;padding:6px 2px;font-size:13px}
-.day.empty{background:transparent}
-.period{background:#ff6fae;color:white;font-weight:bold}
-.fertile{background:#ffd1e3;color:#5b1838;font-weight:bold}
-.ovulation{background:#b45cff;color:white;font-weight:bold}
-.today{outline:3px solid #ff4f9b}
-.legend{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;font-size:13px}
-.legend div{background:#fff7fb;border-radius:14px;padding:9px}
-.entry{background:#fff1f7;border-right:7px solid #ff5fa2;padding:14px;border-radius:18px;margin-top:12px;line-height:1.7}
-.empty-text{color:#86526b;text-align:center;line-height:1.7}
-.footer{font-size:12px;color:#86526b;text-align:center;line-height:1.6}
-@media(max-width:390px){.app{padding:14px}.header h1{font-size:31px}.grid{grid-template-columns:1fr}}
-</style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>יומן מחזור</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ff5fa2">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(160deg, #ffd6e8, #fff6fa);
+            color: #351126;
+            line-height: 1.5;
+        }
+
+        .app {
+            max-width: 540px;
+            margin: auto;
+            padding: 18px 18px 40px
+        }
+
+        .header {
+            text-align: center;
+            padding: 25px 10px
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #86526b;
+        }
+
+        .card {
+            background: white;
+            border-radius: 28px;
+            padding: 20px;
+            margin-bottom: 18px;
+            box-shadow: 0 14px 35px rgba(190, 70, 120, .16);
+            overflow: hidden
+        }
+
+        .title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 14px;
+            color: #ff4f9b;
+        }
+
+        label {
+            display: block;
+            margin-top: 14px;
+            font-weight: bold
+        }
+
+        .hint {
+            color: #946078;
+            font-size: 13px;
+            margin-top: 4px
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 14px;
+            margin-top: 8px;
+            border: 1.5px solid #f3aacb;
+            border-radius: 18px;
+            background: #fff7fb;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #ff4f9b;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical
+        }
+
+        button {
+            width: 100%;
+            border: 0;
+            border-radius: 18px;
+            padding: 15px;
+            margin-top: 16px;
+            background: linear-gradient(135deg, #ff4f9b, #ff91c2);
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:active {
+            opacity: 0.8;
+        }
+
+        .secondary {
+            background: #fff0f7;
+            color: #9a315f;
+            border: 2px solid #ffc7df;
+            width: auto;
+            margin: 0;
+            padding: 8px 13px;
+            font-size: 14px
+        }
+
+        .danger {
+            background: #d9366f;
+            padding: 10px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px
+        }
+
+        .box {
+            background: #fff1f7;
+            border: 2px solid #ffd1e3;
+            border-radius: 20px;
+            padding: 14px
+        }
+
+        .box strong {
+            display: block;
+            color: #873557;
+            font-size: 14px
+        }
+
+        .box span {
+            display: block;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 5px
+        }
+
+        .calendar-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px
+        }
+
+        .weekdays,
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            text-align: center
+        }
+
+        .weekdays div {
+            font-size: 12px;
+            color: #8d5d73;
+            font-weight: bold
+        }
+
+        .day {
+            min-height: 43px;
+            border-radius: 14px;
+            background: #fff7fb;
+            padding: 6px 2px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .day.empty {
+            background: transparent
+        }
+
+        .period {
+            background: #ff6fae;
+            color: white;
+            font-weight: bold
+        }
+
+        .fertile {
+            background: #ffd1e3;
+            color: #5b1838;
+            font-weight: bold
+        }
+
+        .ovulation {
+            background: #b45cff;
+            color: white;
+            font-weight: bold
+        }
+
+        .today {
+            outline: 3px solid #ff4f9b
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 14px;
+            font-size: 13px
+        }
+
+        .legend div {
+            background: #fff7fb;
+            border-radius: 14px;
+            padding: 9px
+        }
+
+        .entry {
+            background: #fff1f7;
+            border-right: 7px solid #ff5fa2;
+            padding: 14px;
+            border-radius: 18px;
+            margin-top: 12px;
+            line-height: 1.7
+        }
+
+        .empty-text {
+            color: #86526b;
+            text-align: center;
+            line-height: 1.7
+        }
+
+        .footer {
+            font-size: 12px;
+            color: #86526b;
+            text-align: center;
+            line-height: 1.6;
+            margin-top: 20px;
+        }
+
+        @media(max-width:390px) {
+            .app {
+                padding: 14px
+            }
+
+            .header h1 {
+                font-size: 31px
+            }
+
+            .grid {
+                grid-template-columns: 1fr
+            }
+        }
+    </style>
 </head>
 
 <body>
-<div class="app">
-  <div class="header">
-    <h1>🌸 יומן מחזור</h1>
-    <p>רישום וסת, חיזוי מחזור הבא, ביוץ וחלון פוריות</p>
-  </div>
+    <div class="app">
+        <div class="header">
+            <h1>🌸 יומן מחזור</h1>
+            <p>רישום וסת, חיזוי מחזור הבא, ביוץ וחלון פוריות</p>
+        </div>
 
-  <div class="card">
-    <div class="title">הוספת רישום חדש</div>
-    <label>📅 תאריך תחילת הווסת</label>
-    <div class="hint">בחרי את היום הראשון של הדימום</div>
-    <input type="date" id="date">
+        <!-- טופס הזנה -->
+        <div class="card">
+            <div class="title">הוספת רישום חדש</div>
+            <label>📅 תאריך תחילת הווסת</label>
+            <div class="hint">בחרי את היום הראשון של הדימום</div>
+            <input type="date" id="date">
 
-    <label>🩸 מספר ימי דימום</label>
-    <div class="hint">לדוגמה: 4 או 5 ימים</div>
-    <input type="number" id="days" value="5" min="1" max="14">
+            <label>🩸 מספר ימי דימום</label>
+            <div class="hint">לדוגמה: 4 או 5 ימים</div>
+            <input type="number" id="days" value="5" min="1" max="14">
 
-    <label>📝 הערות</label>
-    <textarea id="notes" placeholder="כאבים, מצב רוח, תסמינים..."></textarea>
+            <label>📝 הערות</label>
+            <textarea id="notes" placeholder="כאבים, מצב רוח, תסמינים..."></textarea>
 
-    <button onclick="addEntry()">שמור וחישב תחזית 💗</button>
-  </div>
+            <button onclick="addEntry()">שמור וחישב תחזית 💗</button>
+        </div>
 
-  <div class="card">
-    <div class="title">תחזית אישית</div>
-    <div id="prediction" class="empty-text">אין נתונים עדיין<br>הכניסי תאריך וסת כדי לקבל תחזית</div>
-  </div>
+        <!-- תחזית -->
+        <div class="card">
+            <div class="title">תחזית אישית</div>
+            <div id="prediction" class="empty-text">
+                אין נתונים עדיין<br>הכניסי תאריך וסת כדי לקבל תחזית
+            </div>
+        </div>
 
-  <div class="card">
-    <div class="calendar-head">
-      <button class="secondary" onclick="changeMonth(-1)">חודש קודם</button>
-      <strong id="monthTitle"></strong>
-      <button class="secondary" onclick="changeMonth(1)">חודש הבא</button>
+        <!-- לוח שנה -->
+        <div class="card">
+            <div class="calendar-head">
+                <button class="secondary" onclick="changeMonth(-1)">חודש קודם</button>
+                <strong id="monthTitle"></strong>
+                <button class="secondary" onclick="changeMonth(1)">חודש הבא</button>
+            </div>
+
+            <div class="weekdays">
+                <div>א</div><div>ב</div><div>ג</div><div>ד</div><div>ה</div><div>ו</div><div>ש</div>
+            </div>
+            <div id="calendar" class="calendar"></div>
+
+            <div class="legend">
+                <div>🩸 ורוד חזק - ימי וסת</div>
+                <div>💜 סגול - ביוץ</div>
+                <div>🌸 ורוד בהיר - חלון פוריות</div>
+                <div>⭕ מסגרת - היום</div>
+            </div>
+        </div>
+
+        <!-- היסטוריה -->
+        <div class="card">
+            <div class="title">היסטוריית רישומים</div>
+            <div id="list" class="empty-text">עדיין אין רישומים</div>
+        </div>
+
+        <div class="footer">התחזיות הן הערכה בלבד ולא תחליף לייעוץ רפואי.</div>
     </div>
 
-    <div class="weekdays">
-      <div>א</div><div>ב</div><div>ג</div><div>ד</div><div>ה</div><div>ו</div><div>ש</div>
-    </div>
-    <div id="calendar" class="calendar"></div>
+    <script>
+        const KEY = "period_tracker_advanced_v1";
+        let viewDate = new Date();
 
-    <div class="legend">
-      <div>🩸 ורוד חזק - ימי וסת</div>
-      <div>💜 סגול - ביוץ</div>
-      <div>🌸 ורוד בהיר - חלון פוריות</div>
-      <div>⭕ מסגרת - היום</div>
-    </div>
-  </div>
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("date").valueAsDate = new Date();
+            render();
+        });
 
-  <div class="card">
-    <div class="title">היסטוריית רישומים</div>
-    <div id="list" class="empty-text">עדיין אין רישומים</div>
-  </div>
+        // פונקציות עזר
+        function getData() { return JSON.parse(localStorage.getItem(KEY) || "[]") }
+        function saveData(data) { localStorage.setItem(KEY, JSON.stringify(data)) }
+        function addDays(date, days) {
+            const d = new Date(date);
+            d.setDate(d.getDate() + days);
+            return d;
+        }
+        function formatDate(date) { return date.toLocaleDateString("he-IL") }
+        function sameDay(a, b) {
+            return a.getFullYear() === b.getFullYear() &&
+                a.getMonth() === b.getMonth() &&
+                a.getDate() === b.getDate();
+        }
+        function isBetween(date, start, end) {
+            const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            const s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+            const e = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+            return d >= s && d <= e;
+        }
 
-  <div class="footer">התחזיות הן הערכה בלבד ולא תחליף לייעוץ רפואי.</div>
-</div>
+        // ניהול נתונים
+        function addEntry() {
+            const date = document.getElementById("date").value;
+            const days = Number(document.getElementById("days").value);
+            const notes = document.getElementById("notes").value.trim();
 
-<script>
-const KEY = "period_tracker_advanced_v1";
-let viewDate = new Date();
+            if (!date) return alert("בחרי תאריך תחילת וסת");
+            if (!days || days < 1 || days > 14) return alert("מספר ימי הדימום צריך להיות בין 1 ל-14");
 
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("date").valueAsDate = new Date();
-  render();
-});
+            const data = getData();
+            data.unshift({ id: Date.now(), date, days, notes });
+            data.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-function getData(){return JSON.parse(localStorage.getItem(KEY) || "[]")}
-function saveData(data){localStorage.setItem(KEY, JSON.stringify(data))}
-function addDays(date, days){const d=new Date(date);d.setDate(d.getDate()+days);return d}
-function formatDate(date){return date.toLocaleDateString("he-IL")}
-function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
-function isBetween(date,start,end){
-  const d=new Date(date.getFullYear(),date.getMonth(),date.getDate());
-  const s=new Date(start.getFullYear(),start.getMonth(),start.getDate());
-  const e=new Date(end.getFullYear(),end.getMonth(),end.getDate());
-  return d>=s && d<=e;
-}
+            saveData(data);
+            document.getElementById("notes").value = "";
+            render();
+        }
 
-function addEntry(){
-  const date=document.getElementById("date").value;
-  const days=Number(document.getElementById("days").value);
-  const notes=document.getElementById("notes").value.trim();
-  if(!date)return alert("בחרי תאריך תחילת וסת");
-  if(!days||days<1||days>14)return alert("מספר ימי הדימום צריך להיות בין 1 ל-14");
-  const data=getData();
-  data.unshift({id:Date.now(),date,days,notes});
-  data.sort((a,b)=>new Date(b.date)-new Date(a.date));
-  saveData(data);
-  document.getElementById("notes").value="";
-  render();
-}
+        function deleteEntry(id) {
+            if (!confirm("למחוק את הרישום?")) return;
+            saveData(getData().filter(x => x.id !== id));
+            render();
+        }
 
-function deleteEntry(id){
-  if(!confirm("למחוק את הרישום?"))return;
-  saveData(getData().filter(x=>x.id!==id));
-  render();
-}
+        // חישובים
+        function avgCycle(data) {
+            if (data.length < 2) return 28;
+            let gaps = [];
+            for (let i = 0; i < data.length - 1; i++) {
+                const newer = new Date(data[i].date);
+                const older = new Date(data[i + 1].date);
+                const diff = Math.round((newer - older) / 86400000);
+                if (diff >= 21 && diff <= 45) gaps.push(diff);
+            }
+            if (!gaps.length) return 28;
+            return Math.round(gaps.reduce((a, b) => a + b, 0) / gaps.length);
+        }
 
-function avgCycle(data){
-  if(data.length<2)return 28;
-  let gaps=[];
-  for(let i=0;i<data.length-1;i++){
-    const newer=new Date(data[i].date);
-    const older=new Date(data[i+1].date);
-    const diff=Math.round((newer-older)/86400000);
-    if(diff>=21 && diff<=45)gaps.push(diff);
-  }
-  if(!gaps.length)return 28;
-  return Math.round(gaps.reduce((a,b)=>a+b,0)/gaps.length);
-}
+        function getPredictions() {
+            const data = getData();
+            if (!data.length) return null;
 
-function getPredictions(){
-  const data=getData();
-  if(!data.length)return null;
-  const cycle=avgCycle(data);
-  const last=new Date(data[0].date);
-  const nextPeriod=addDays(last,cycle);
-  const ovulation=addDays(nextPeriod,-14);
-  const fertileStart=addDays(ovulation,-5);
-  const fertileEnd=addDays(ovulation,1);
-  return {cycle,nextPeriod,ovulation,fertileStart,fertileEnd};
-}
+            const cycle = avgCycle(data);
+            const last = new Date(data[0].date);
+            const nextPeriod = addDays(last, cycle);
+            const ovulation = addDays(nextPeriod, -14);
+            const fertileStart = addDays(ovulation, -5);
+            const fertileEnd = addDays(ovulation, 1);
 
-function renderPrediction(){
-  const prediction=document.getElementById("prediction");
-  const pred=getPredictions();
-  if(!pred){
-    prediction.className="empty-text";
-    prediction.innerHTML="אין נתונים עדיין<br>הכניסי תאריך וסת כדי לקבל תחזית";
-    return;
-  }
-  prediction.className="grid";
-  prediction.innerHTML=`
-    <div class="box"><strong>🌺 המחזור הבא צפוי</strong><span>${formatDate(pred.nextPeriod)}</span></div>
-    <div class="box"><strong>💜 ביוץ משוער</strong><span>${formatDate(pred.ovulation)}</span></div>
-    <div class="box"><strong>🌸 חלון פוריות</strong><span>${formatDate(pred.fertileStart)} - ${formatDate(pred.fertileEnd)}</span></div>
-    <div class="box"><strong>📊 אורך מחזור ממוצע</strong><span>${pred.cycle} ימים</span></div>`;
-}
+            return { cycle, nextPeriod, ovulation, fertileStart, fertileEnd };
+        }
 
-function changeMonth(step){
-  viewDate.setMonth(viewDate.getMonth()+step);
-  renderCalendar();
-}
+        // רינדור ממשק
+        function renderPrediction() {
+            const prediction = document.getElementById("prediction");
+            const pred = getPredictions();
 
-function renderCalendar(){
-  const data=getData();
-  const pred=getPredictions();
-  const calendar=document.getElementById("calendar");
-  const monthTitle=document.getElementById("monthTitle");
-  calendar.innerHTML="";
-  const year=viewDate.getFullYear();
-  const month=viewDate.getMonth();
-  monthTitle.textContent=viewDate.toLocaleDateString("he-IL",{month:"long",year:"numeric"});
-  const firstDay=new Date(year,month,1);
-  const lastDay=new Date(year,month+1,0);
-  for(let i=0;i<firstDay.getDay();i++){
-    const empty=document.createElement("div");
-    empty.className="day empty";
-    calendar.appendChild(empty);
-  }
-  for(let day=1;day<=lastDay.getDate();day++){
-    const current=new Date(year,month,day);
-    const div=document.createElement("div");
-    div.className="day";
-    div.textContent=day;
-    if(sameDay(current,new Date()))div.classList.add("today");
+            if (!pred) {
+                prediction.className = "empty-text";
+                prediction.innerHTML = "אין נתונים עדיין<br>הכניסי תאריך וסת כדי לקבל תחזית";
+                return;
+            }
 
-    if(pred && isBetween(current,pred.fertileStart,pred.fertileEnd))div.classList.add("fertile");
-    if(pred && sameDay(current,pred.ovulation))div.classList.add("ovulation");
+            prediction.className = "grid";
+            prediction.innerHTML = `
+                <div class="box"><strong>🌺 המחזור הבא צפוי</strong><span>${formatDate(pred.nextPeriod)}</span></div>
+                <div class="box"><strong>💜 ביוץ משוער</strong><span>${formatDate(pred.ovulation)}</span></div>
+                <div class="box"><strong>🌸 חלון פוריות</strong><span>${formatDate(pred.fertileStart)} - ${formatDate(pred.fertileEnd)}</span></div>
+                <div class="box"><strong>📊 אורך מחזור ממוצע</strong><span>${pred.cycle} ימים</span></div>`;
+        }
 
-    data.forEach(entry=>{
-      const start=new Date(entry.date);
-      const end=addDays(start,Number(entry.days)-1);
-      if(isBetween(current,start,end))div.classList.add("period");
-    });
+        function changeMonth(step) {
+            viewDate.setMonth(viewDate.getMonth() + step);
+            renderCalendar();
+        }
 
-    calendar.appendChild(div);
-  }
-}
+        function renderCalendar() {
+            const data = getData();
+            const pred = getPredictions();
+            const calendar = document.getElementById("calendar");
+            const monthTitle = document.getElementById("monthTitle");
 
-function renderList(){
-  const data=getData();
-  const list=document.getElementById("list");
-  if(!data.length){
-    list.className="empty-text";
-    list.innerHTML="עדיין אין רישומים";
-    return;
-  }
-  list.className="";
-  list.innerHTML="";
-  data.forEach(entry=>{
-    const div=document.createElement("div");
-    div.className="entry";
-    div.innerHTML=`
-      <strong>📅 ${formatDate(new Date(entry.date))}</strong><br>
-      🩸 משך דימום: ${entry.days} ימים<br>
-      📝 ${entry.notes || "אין הערות"}
-      <button class="danger" onclick="deleteEntry(${entry.id})">מחק רישום</button>`;
-    list.appendChild(div);
-  });
-}
+            calendar.innerHTML = "";
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth();
 
-function render(){
-  renderPrediction();
-  renderCalendar();
-  renderList();
-}
-</script>
+            monthTitle.textContent = viewDate.toLocaleDateString("he-IL", { month: "long", year: "numeric" });
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+
+            // ימים ריקים בתחילת חודש
+            for (let i = 0; i < firstDay.getDay(); i++) {
+                const empty = document.createElement("div");
+                empty.className = "day empty";
+                calendar.appendChild(empty);
+            }
+
+            // ימי החודש
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const current = new Date(year, month, day);
+                const div = document.createElement("div");
+                div.className = "day";
+                div.textContent = day;
+
+                if (sameDay(current, new Date())) div.classList.add("today");
+
+                if (pred) {
+                    if (isBetween(current, pred.fertileStart, pred.fertileEnd)) div.classList.add("fertile");
+                    if (sameDay(current, pred.ovulation)) div.classList.add("ovulation");
+                }
+
+                data.forEach(entry => {
+                    const start = new Date(entry.date);
+                    const end = addDays(start, Number(entry.days) - 1);
+                    if (isBetween(current, start, end)) div.classList.add("period");
+                });
+
+                calendar.appendChild(div);
+            }
+        }
+
+        function renderList() {
+            const data = getData();
+            const list = document.getElementById("list");
+
+            if (!data.length) {
+                list.className = "empty-text";
+                list.innerHTML = "עדיין אין רישומים";
+                return;
+            }
+
+            list.className = "";
+            list.innerHTML = "";
+            data.forEach(entry => {
+                const div = document.createElement("div");
+                div.className = "entry";
+                div.innerHTML = `
+                    <strong>📅 ${formatDate(new Date(entry.date))}</strong><br>
+                    🩸 משך דימום: ${entry.days} ימים<br>
+                    📝 ${entry.notes || "אין הערות"}
+                    <button class="danger" onclick="deleteEntry(${entry.id})">מחק רישום</button>`;
+                list.appendChild(div);
+            });
+        }
+
+        function render() {
+            renderPrediction();
+            renderCalendar();
+            renderList();
+        }
+    </script>
 </body>
+
 </html>
