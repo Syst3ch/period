@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <!-- קידום ושיווק (SEO) -->
     <title>Perioday - היומן שלך לאיזון, מחזור ופוריות</title>
     <meta name="description" content="Perioday - האפליקציה האישית שלך למעקב אחר מחזור, חישוב ימי ביוץ וחלון פוריות.">
-    <meta property="og:title" content="Perioday - יומן מחזור חכם">
     <meta name="author" content="אור שקפאתי">
 
     <style>
@@ -33,31 +31,26 @@
         .logo-text { font-size: 28px; font-weight: 800; color: #ff4f9b; }
         .tagline { font-size: 14px; color: #86526b; margin-top: 4px; font-weight: 500; }
 
-        /* כותרת בתוך האפליקציה */
-        .header-logo { display: flex; align-items: center; gap: 12px; }
-        .logo-icon-small {
-            width: 40px; height: 40px; background: linear-gradient(135deg, #ff4f9b, #ff91c2);
-            border-radius: 10px; display: flex; align-items: center; justify-content: center;
-            font-size: 22px; color: white; box-shadow: 0 4px 10px rgba(255, 79, 155, 0.2);
-        }
-
         .card { background: white; border-radius: 25px; padding: 20px; margin-bottom: 15px; box-shadow: 0 10px 30px rgba(190, 70, 120, .1); }
         .title { font-size: 18px; font-weight: bold; margin-bottom: 12px; color: #ff4f9b; display: flex; align-items: center; gap: 8px; }
         
         input, select, textarea, .main-btn { width: 100%; padding: 14px; border-radius: 18px; border: 1.5px solid #f3aacb; margin-top: 8px; font-size: 16px; outline: none; }
         .main-btn { background: linear-gradient(135deg, #ff4f9b, #ff91c2); color: white; border: 0; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
-        .main-btn:active { transform: scale(0.98); }
-        .logout-btn { background: #f3f3f3; color: #86526b; border: 0; padding: 8px 12px; border-radius: 12px; font-size: 12px; cursor: pointer; }
+        .secondary-btn { background: #f3f3f3; color: #86526b; border: 0; padding: 10px; border-radius: 15px; font-size: 13px; cursor: pointer; width: 100%; margin-top: 10px; }
         
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .box { background: #fff1f7; border: 1px solid #ffd1e3; border-radius: 18px; padding: 12px; text-align: center; }
         .box strong { display: block; color: #873557; font-size: 11px; margin-bottom: 4px; }
         .box span { font-size: 14px; font-weight: 800; color: #ff4f9b; }
         
+        .alert-card { background: #fff8e1; border-right: 5px solid #ffc107; padding: 15px; border-radius: 18px; margin-bottom: 15px; font-size: 13px; color: #6d4c41; }
+        .tip-card { background: #f3e5f5; border-right: 5px solid #9c27b0; padding: 15px; border-radius: 18px; margin-bottom: 15px; font-size: 13px; }
+
         .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
         .day { min-height: 40px; border-radius: 10px; background: #fff7fb; display: flex; align-items: center; justify-content: center; font-size: 13px; }
         .period { background: #ff6fae !important; color: white !important; font-weight: bold; }
         .ovulation { background: #d4a5ff !important; color: white !important; border-radius: 50%; }
+        .fertility-window { border: 2px dashed #d4a5ff; }
         .today { border: 2px solid #ff4f9b; }
 
         .entry { background: #fff1f7; border-right: 5px solid #ff5fa2; padding: 15px; border-radius: 18px; margin-top: 10px; position: relative; }
@@ -68,7 +61,6 @@
 </head>
 
 <body>
-    <!-- מסך התחברות -->
     <div id="loginScreen" class="login-screen">
         <div class="logo-container">
             <div class="logo-icon">🌸</div>
@@ -78,39 +70,38 @@
         <button id="loginBtn" class="main-btn" style="width: 80%;">כניסה עם Google 🚀</button>
     </div>
 
-    <!-- מסך הגדרה ראשונית -->
     <div id="setupScreen" class="setup-screen" style="display: none;">
         <div class="logo-icon">✨</div>
         <h2>נעים להכיר!</h2>
-        <p style="color:#86526b; margin-top:10px;">איך תרצי שנקרא לך?</p>
-        <input type="text" id="customName" placeholder="הכניסי את שמך בעברית">
+        <input type="text" id="customName" placeholder="איך תרצי שנקרא לך?">
+        <label style="font-size: 13px; margin-top: 15px; color: #86526b;">בחרי מצב שימוש:</label>
+        <select id="initialMode">
+            <option value="regular">מעקב מחזור רגיל</option>
+            <option value="conception">תכנון היריון</option>
+        </select>
         <button id="saveNameBtn" class="main-btn">בואי נתחיל 🌸</button>
     </div>
 
-    <!-- אפליקציה ראשית -->
     <div id="mainApp" class="app" style="display: none;">
         <div class="header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0 20px;">
-            <div class="header-logo">
-                <div class="logo-icon-small">🌸</div>
-                <div>
-                    <div id="greeting" style="font-weight: bold; color: #ff4f9b; font-size: 16px;">שלום</div>
-                    <div class="tagline" style="text-align:right; margin:0; font-size:10px;">היומן שלך לאיזון, מחזור ופוריות</div>
-                </div>
+            <div>
+                <div id="greeting" style="font-weight: bold; color: #ff4f9b; font-size: 18px;">שלום</div>
+                <div id="modeDisplay" style="font-size: 10px; color: #86526b;">מצב: מעקב רגיל</div>
             </div>
             <button id="logoutBtn" class="logout-btn">התנתקות</button>
         </div>
 
+        <div id="appAlerts"></div>
+
         <div class="card">
             <div class="title">📅 הזנת מחזור חדש</div>
-            <label style="font-size:12px; margin-right:5px; color:#86526b">תאריך התחלה:</label>
             <input type="date" id="date">
-            <label style="font-size:12px; margin-right:5px; color:#86526b">כמה ימים נמשך?</label>
             <select id="duration">
                 <option value="3">3 ימים</option><option value="4">4 ימים</option>
                 <option value="5" selected>5 ימים</option><option value="6">6 ימים</option>
-                <option value="7">7 ימים</option><option value="8">8 ימים</option>
+                <option value="7">7 ימים</option>
             </select>
-            <textarea id="notes" rows="2" placeholder="איך את מרגישה היום? (אופציונלי)" style="margin-top: 12px;"></textarea>
+            <textarea id="notes" rows="2" placeholder="הערות אופציונליות..."></textarea>
             <button id="saveBtn" class="main-btn">שמירה ביומן ✨</button>
         </div>
 
@@ -129,20 +120,27 @@
         </div>
 
         <div class="card">
+            <div class="title">💡 טיפ השבוע</div>
+            <div id="tipContent" class="tip-card"></div>
+        </div>
+
+        <div class="card">
             <div class="title">📖 היסטוריה</div>
             <div id="list"></div>
+            <button onclick="exportData()" class="secondary-btn">📊 הורדת דוח לרופא</button>
+            <button onclick="toggleAppMode()" class="secondary-btn" style="background:#fff1f7">⚙️ החלפת מצב (רגיל/תכנון היריון)</button>
         </div>
     </div>
 
     <footer>
         <p>© כל הזכויות שמורות לאור שקפאתי</p>
-        <p>גרסת עדכון: 1.5.3v</p>
+        <p>גרסת עדכון: 1.7.0v</p>
     </footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, getDocs, deleteDoc, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, getDocs, deleteDoc, doc, setDoc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC3GgMwsc-30RoK7bKiCdaw8P6kZz-hLfg",
@@ -157,45 +155,54 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         let currentUser = null;
+        let userMode = 'regular';
         let viewDate = new Date();
+        let globalData = [];
 
-        function getGreeting() {
-            const hour = new Date().getHours();
-            if (hour < 12 && hour > 4) return "בוקר טוב";
-            if (hour < 17) return "צהריים טובים";
-            if (hour < 21) return "ערב טוב";
-            return "לילה טוב";
-        }
+        const tips = {
+            regular: "<strong>תזונה בזמן מחזור:</strong> שילוב של מזונות עשירים במגנזיום (כמו שוקולד מריר) מסייע בהפחתת התכווצויות.",
+            conception: "<strong>זיהוי חלון הפוריות:</strong> מעקב אחר הפרשות וטמפרטורת גוף יכול לעזור בזיהוי הימים הפוריים ביותר שלך."
+        };
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
                 const userSnap = await getDoc(doc(db, "users_metadata", user.uid));
-                if (userSnap.exists()) showApp(userSnap.data().name);
-                else {
+                if (userSnap.exists()) {
+                    userMode = userSnap.data().mode || 'regular';
+                    showApp(userSnap.data().name);
+                } else {
                     document.getElementById('loginScreen').style.display = 'none';
                     document.getElementById('setupScreen').style.display = 'flex';
                 }
             } else {
                 document.getElementById('loginScreen').style.display = 'flex';
                 document.getElementById('mainApp').style.display = 'none';
-                document.getElementById('setupScreen').style.display = 'none';
             }
         });
 
         document.getElementById('saveNameBtn').onclick = async () => {
             const name = document.getElementById('customName').value;
+            const mode = document.getElementById('initialMode').value;
             if (!name) return alert("אנא הכניסי שם");
-            await setDoc(doc(db, "users_metadata", currentUser.uid), { name });
+            userMode = mode;
+            await setDoc(doc(db, "users_metadata", currentUser.uid), { name, mode });
             showApp(name);
+        };
+
+        window.toggleAppMode = async () => {
+            userMode = userMode === 'regular' ? 'conception' : 'regular';
+            await updateDoc(doc(db, "users_metadata", currentUser.uid), { mode: userMode });
+            location.reload();
         };
 
         function showApp(name) {
             document.getElementById('setupScreen').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
-            document.getElementById('greeting').innerText = `${getGreeting()}, ${name} 🌸`;
-            document.getElementById("date").valueAsDate = new Date();
+            document.getElementById('greeting').innerText = `שלום, ${name} 🌸`;
+            document.getElementById('modeDisplay').innerText = `מצב: ${userMode === 'regular' ? 'מעקב רגיל' : 'תכנון היריון'}`;
+            document.getElementById('tipContent').innerHTML = tips[userMode];
             loadData();
         }
 
@@ -209,24 +216,22 @@
             await addDoc(collection(db, "users", currentUser.uid, "entries"), {
                 date, duration, notes: document.getElementById("notes").value, timestamp: serverTimestamp()
             });
-            document.getElementById("notes").value = "";
             loadData();
-            alert("נשמר בהצלחה! ✨");
+            alert("נשמר! ✨");
         };
 
         async function loadData() {
             if (!currentUser) return;
             const q = query(collection(db, "users", currentUser.uid, "entries"), orderBy("date", "desc"));
             const querySnapshot = await getDocs(q);
-            render(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            globalData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            render(globalData);
         }
 
         function render(data) {
             let nextPeriod = null; let ovulationDate = null;
-            const predCard = document.getElementById("predCard");
-
             if (data.length >= 2) {
-                predCard.style.display = "block";
+                document.getElementById("predCard").style.display = "block";
                 let gaps = [];
                 for (let i = 0; i < data.length - 1; i++) {
                     let diff = Math.round((new Date(data[i].date) - new Date(data[i+1].date)) / 86400000);
@@ -241,7 +246,7 @@
                     <div class="box"><strong>מחזור הבא</strong><span>${nextPeriod.toLocaleDateString('he-IL')}</span></div>
                     <div class="box"><strong>ביוץ משוער</strong><span>${ovulationDate.toLocaleDateString('he-IL')}</span></div>
                 `;
-            } else { predCard.style.display = "none"; }
+            } else { document.getElementById("predCard").style.display = "none"; }
 
             renderCalendar(data, nextPeriod, ovulationDate);
             const list = document.getElementById("list");
@@ -249,7 +254,7 @@
             data.slice(0, 5).forEach(e => {
                 const div = document.createElement('div');
                 div.className = 'entry';
-                div.innerHTML = `<button class="delete-btn">🗑️</button><strong>${new Date(e.date).toLocaleDateString('he-IL')}</strong><br><small>נמשך ${e.duration} ימים. ${e.notes}</small>`;
+                div.innerHTML = `<button class="delete-btn">🗑️</button><strong>${new Date(e.date).toLocaleDateString('he-IL')}</strong><br><small>נמשך ${e.duration} ימים.</small>`;
                 div.querySelector('.delete-btn').onclick = async () => { if(confirm("למחוק?")) { await deleteDoc(doc(db, "users", currentUser.uid, "entries", e.id)); loadData(); } };
                 list.appendChild(div);
             });
@@ -259,7 +264,6 @@
             const cal = document.getElementById("calendar"); cal.innerHTML = "";
             const year = viewDate.getFullYear(); const month = viewDate.getMonth();
             document.getElementById("monthTitle").innerText = viewDate.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
-            
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
@@ -271,10 +275,26 @@
                     const start = new Date(e.date); const end = new Date(start); end.setDate(end.getDate() + e.duration - 1);
                     if (curr >= start && curr <= end) cls += " period";
                 });
-                if (ovulationDate && curr.toDateString() === ovulationDate.toDateString()) cls += " ovulation";
+                if (ovulationDate) {
+                    if (curr.toDateString() === ovulationDate.toDateString()) cls += " ovulation";
+                    // מצב תכנון היריון: הדגשת חלון הפוריות (3 ימים לפני ואחרי ביוץ)
+                    if (userMode === 'conception') {
+                        const startWindow = new Date(ovulationDate); startWindow.setDate(startWindow.getDate() - 3);
+                        const endWindow = new Date(ovulationDate); endWindow.setDate(endWindow.getDate() + 3);
+                        if (curr >= startWindow && curr <= endWindow) cls += " fertility-window";
+                    }
+                }
                 cal.innerHTML += `<div class="day ${cls}">${d}</div>`;
             }
         }
+
+        window.exportData = () => {
+            let text = "דוח מחזור אישי - Perioday\n\n";
+            globalData.forEach(e => { text += `תאריך: ${e.date} | משך: ${e.duration} ימים\n`; });
+            const blob = new Blob([text], { type: "text/plain" });
+            const anchor = document.createElement("a");
+            anchor.download = "report.txt"; anchor.href = window.URL.createObjectURL(blob); anchor.click();
+        };
 
         document.getElementById("prevMonth").onclick = () => { viewDate.setMonth(viewDate.getMonth() - 1); loadData(); };
         document.getElementById("nextMonth").onclick = () => { viewDate.setMonth(viewDate.getMonth() + 1); loadData(); };
