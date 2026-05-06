@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Perioday - מעקב מחזור וביוץ</title>
+    <title>Perioday - יומן מחזור</title>
     
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -16,37 +16,23 @@
         .app, .login-screen { max-width: 500px; margin: auto; padding: 20px; }
         .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; }
         .card { background: white; border-radius: 25px; padding: 20px; margin-bottom: 15px; box-shadow: 0 10px 30px rgba(190, 70, 120, .1); width: 100%; }
-        .title { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #ff4f9b; display: flex; align-items: center; gap: 8px; }
+        .title { font-size: 18px; font-weight: bold; margin-bottom: 12px; color: #ff4f9b; display: flex; align-items: center; gap: 8px; }
         
-        input, textarea, select, .main-btn { width: 100%; padding: 14px; border-radius: 18px; border: 1.5px solid #f3aacb; margin-top: 10px; font-size: 16px; outline: none; }
-        .main-btn { background: linear-gradient(135deg, #ff4f9b, #ff91c2); color: white; border: 0; font-weight: bold; cursor: pointer; box-shadow: 0 6px 15px rgba(255, 79, 155, 0.3); }
+        label { font-size: 13px; color: #86526b; display: block; margin-top: 10px; margin-right: 5px; }
+        input, select, textarea, .main-btn { width: 100%; padding: 14px; border-radius: 18px; border: 1.5px solid #f3aacb; margin-top: 5px; font-size: 16px; outline: none; }
+        .main-btn { background: linear-gradient(135deg, #ff4f9b, #ff91c2); color: white; border: 0; font-weight: bold; cursor: pointer; margin-top: 15px; }
         .logout-btn { background: #f3f3f3; color: #86526b; border: 0; padding: 8px 12px; border-radius: 12px; font-size: 12px; cursor: pointer; }
         
-        .toggle-container { display: flex; align-items: center; gap: 10px; padding: 10px 0; }
-        .switch { position: relative; display: inline-block; width: 46px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #f3aacb; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #ff4f9b; }
-        input:checked + .slider:before { transform: translateX(22px); }
-
-        .symptoms { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
-        .symptom-tag { padding: 8px 12px; border: 1.5px solid #f3aacb; border-radius: 15px; background: white; font-size: 13px; white-space: nowrap; cursor: pointer; flex-shrink: 0; }
-        .symptom-tag.active { background: #ff4f9b; color: white; border-color: #ff4f9b; }
-
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .box { background: #fff1f7; border: 1px solid #ffd1e3; border-radius: 18px; padding: 12px; text-align: center; }
         .box strong { display: block; color: #873557; font-size: 11px; margin-bottom: 4px; }
         .box span { font-size: 14px; font-weight: 800; color: #ff4f9b; }
         
         .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
-        .day { min-height: 40px; border-radius: 10px; background: #fff7fb; display: flex; align-items: center; justify-content: center; font-size: 13px; position: relative; }
+        .day { min-height: 40px; border-radius: 10px; background: #fff7fb; display: flex; align-items: center; justify-content: center; font-size: 13px; }
         .period { background: #ff6fae !important; color: white !important; font-weight: bold; }
         .ovulation { background: #d4a5ff !important; color: white !important; border-radius: 50%; }
         .today { border: 2px solid #ff4f9b; }
-
-        .legend { display: flex; gap: 10px; font-size: 11px; margin-top: 10px; justify-content: center; }
-        .legend div { display: flex; align-items: center; gap: 4px; }
 
         .entry { background: #fff1f7; border-right: 5px solid #ff5fa2; padding: 15px; border-radius: 18px; margin-top: 10px; position: relative; }
         .delete-btn { position: absolute; left: 12px; top: 12px; border: 0; background: 0; cursor: pointer; font-size: 16px; }
@@ -57,7 +43,7 @@
     <div id="loginScreen" class="login-screen">
         <h1 style="font-size: 50px;">🌸</h1>
         <h2 style="color: #ff4f9b; margin-bottom: 20px;">Perioday</h2>
-        <button id="loginBtn" class="main-btn" style="width: 80%;">התחברות עם Google 🚀</button>
+        <button id="loginBtn" class="main-btn" style="width: 80%;">התחברות מהירה 🚀</button>
     </div>
 
     <div id="mainApp" class="app" style="display: none;">
@@ -67,39 +53,21 @@
         </div>
 
         <div class="card">
-            <div class="title">✨ רישום חדש</div>
+            <div class="title">📅 הזנת מחזור</div>
+            <label>מתי התחיל?</label>
             <input type="date" id="date">
-            
-            <div class="toggle-container">
-                <label class="switch">
-                    <input type="checkbox" id="isPeriod" onchange="document.getElementById('durationBox').style.display = this.checked ? 'block' : 'none'">
-                    <span class="slider"></span>
-                </label>
-                <span>התחיל לי מחזור היום 🩸</span>
-            </div>
-
-            <div id="durationBox" style="display: none;">
-                <label style="font-size: 12px; color: #86526b;">מספר ימי דימום משוער:</label>
-                <select id="duration">
-                    <option value="3">3 ימים</option><option value="4">4 ימים</option>
-                    <option value="5" selected>5 ימים</option><option value="6">6 ימים</option>
-                    <option value="7">7 ימים</option>
-                </select>
-            </div>
-
-            <div class="symptoms">
-                <div class="symptom-tag" onclick="this.classList.toggle('active')">🥨 מתוק</div>
-                <div class="symptom-tag" onclick="this.classList.toggle('active')">⚡ כאב</div>
-                <div class="symptom-tag" onclick="this.classList.toggle('active')">😴 עייפות</div>
-                <div class="symptom-tag" onclick="this.classList.toggle('active')">😡 עצבנות</div>
-                <div class="symptom-tag" onclick="this.classList.toggle('active')">🎈 נפיחות</div>
-            </div>
-            <textarea id="notes" rows="2" placeholder="איך את מרגישה?"></textarea>
-            <button id="saveBtn" class="main-btn">שמור ביומן 💗</button>
+            <label>כמה ימים נמשך?</label>
+            <select id="duration">
+                <option value="3">3 ימים</option><option value="4">4 ימים</option>
+                <option value="5" selected>5 ימים</option><option value="6">6 ימים</option>
+                <option value="7">7 ימים</option><option value="8">8 ימים</option>
+            </select>
+            <textarea id="notes" rows="2" placeholder="הערות (אופציונלי)..." style="margin-top: 15px;"></textarea>
+            <button id="saveBtn" class="main-btn">שמירה ביומן ✨</button>
         </div>
 
         <div class="card" id="predCard" style="display:none;">
-            <div class="title">🔮 תחזית חכמה</div>
+            <div class="title">🔮 תחזית וביוץ</div>
             <div id="prediction" class="grid"></div>
         </div>
 
@@ -110,10 +78,6 @@
                 <button id="nextMonth" style="border:0; background:0; font-size:20px;">▶️</button>
             </div>
             <div id="calendar" class="calendar"></div>
-            <div class="legend">
-                <div><span style="width:10px;height:10px;background:#ff6fae;border-radius:2px;"></span> מחזור</div>
-                <div><span style="width:10px;height:10px;background:#d4a5ff;border-radius:50%;"></span> ביוץ</div>
-            </div>
         </div>
 
         <div class="card">
@@ -161,21 +125,16 @@
 
         document.getElementById('saveBtn').onclick = async () => {
             const date = document.getElementById("date").value;
+            const duration = parseInt(document.getElementById("duration").value);
             if (!date || !currentUser) return;
-            const symptoms = Array.from(document.querySelectorAll('.symptom-tag.active')).map(t => t.innerText);
-            const isPeriod = document.getElementById("isPeriod").checked;
-            const duration = isPeriod ? parseInt(document.getElementById("duration").value) : 0;
             
             await addDoc(collection(db, "users", currentUser.uid, "entries"), {
-                date, isPeriod, duration, symptoms, notes: document.getElementById("notes").value, timestamp: serverTimestamp()
+                date, duration, notes: document.getElementById("notes").value, timestamp: serverTimestamp()
             });
             
             document.getElementById("notes").value = "";
-            document.getElementById("isPeriod").checked = false;
-            document.getElementById("durationBox").style.display = "none";
-            document.querySelectorAll('.symptom-tag').forEach(t => t.classList.remove('active'));
             loadData();
-            alert("נשמר! ✨");
+            alert("נשמר! 🌸");
         };
 
         async function loadData() {
@@ -186,29 +145,30 @@
         }
 
         function render(data) {
-            const periodEntries = data.filter(e => e.isPeriod);
             let nextPeriod = null;
             let ovulationDate = null;
+            const predCard = document.getElementById("predCard");
 
-            if (periodEntries.length >= 2) {
-                document.getElementById("predCard").style.display = "block";
+            // תיקון: אם אין מספיק נתונים (פחות מ-2 רישומים), מאפסים הכל
+            if (data.length >= 2) {
+                predCard.style.display = "block";
                 let gaps = [];
-                for (let i = 0; i < periodEntries.length - 1; i++) {
-                    let diff = Math.round((new Date(periodEntries[i].date) - new Date(periodEntries[i+1].date)) / 86400000);
+                for (let i = 0; i < data.length - 1; i++) {
+                    let diff = Math.round((new Date(data[i].date) - new Date(data[i+1].date)) / 86400000);
                     if (diff > 20 && diff < 45) gaps.push(diff);
                 }
                 const avgCycle = gaps.length ? Math.round(gaps.reduce((a,b)=>a+b)/gaps.length) : 28;
-                
-                nextPeriod = new Date(periodEntries[0].date);
+                nextPeriod = new Date(data[0].date);
                 nextPeriod.setDate(nextPeriod.getDate() + avgCycle);
-                
                 ovulationDate = new Date(nextPeriod);
                 ovulationDate.setDate(ovulationDate.getDate() - 14);
 
                 document.getElementById("prediction").innerHTML = `
-                    <div class="box"><strong>המחזור הבא</strong><span>${nextPeriod.toLocaleDateString('he-IL')}</span></div>
-                    <div class="box"><strong>יום ביוץ משוער</strong><span>${ovulationDate.toLocaleDateString('he-IL')}</span></div>
+                    <div class="box"><strong>מחזור הבא</strong><span>${nextPeriod.toLocaleDateString('he-IL')}</span></div>
+                    <div class="box"><strong>ביוץ משוער</strong><span>${ovulationDate.toLocaleDateString('he-IL')}</span></div>
                 `;
+            } else {
+                predCard.style.display = "none";
             }
 
             renderCalendar(data, nextPeriod, ovulationDate);
@@ -218,7 +178,7 @@
             data.slice(0, 5).forEach(e => {
                 const entryDiv = document.createElement('div');
                 entryDiv.className = 'entry';
-                entryDiv.innerHTML = `<button class="delete-btn">🗑️</button><strong>${new Date(e.date).toLocaleDateString('he-IL')} ${e.isPeriod ? '🩸 ('+e.duration+' ימים)' : ''}</strong><br><small>${e.symptoms.join(', ')} ${e.notes}</small>`;
+                entryDiv.innerHTML = `<button class="delete-btn">🗑️</button><strong>${new Date(e.date).toLocaleDateString('he-IL')}</strong><br><small>נמשך ${e.duration} ימים. ${e.notes}</small>`;
                 entryDiv.querySelector('.delete-btn').onclick = async () => { if(confirm("למחוק?")) { await deleteDoc(doc(db, "users", currentUser.uid, "entries", e.id)); loadData(); } };
                 list.appendChild(entryDiv);
             });
@@ -239,18 +199,13 @@
                 const curr = new Date(year, month, d);
                 let cls = (new Date().toDateString() === curr.toDateString()) ? "today" : "";
                 
-                // צביעת ימי מחזור מהעבר
                 data.forEach(e => {
-                    if (e.isPeriod) {
-                        const start = new Date(e.date);
-                        const end = new Date(start); end.setDate(end.getDate() + e.duration - 1);
-                        if (curr >= start && curr <= end) cls += " period";
-                    }
+                    const start = new Date(e.date);
+                    const end = new Date(start); end.setDate(end.getDate() + e.duration - 1);
+                    if (curr >= start && curr <= end) cls += " period";
                 });
 
-                // סימון ביוץ
                 if (ovulationDate && curr.toDateString() === ovulationDate.toDateString()) cls += " ovulation";
-                
                 cal.innerHTML += `<div class="day ${cls}">${d}</div>`;
             }
         }
