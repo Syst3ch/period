@@ -32,12 +32,11 @@
         .tagline { font-size: 14px; color: #86526b; margin-top: 4px; font-weight: 500; }
 
         .card { background: white; border-radius: 25px; padding: 20px; margin-bottom: 15px; box-shadow: 0 10px 30px rgba(190, 70, 120, .1); }
-        .title { font-size: 18px; font-weight: bold; margin-bottom: 12px; color: #ff4f9b; display: flex; align-items: center; gap: 8px; }
+        .title { font-size: 18px; font-weight: bold; margin-bottom: 12px; color: #ff4f9b; display: flex; align-items: center; gap: 8px; cursor: pointer; }
         
         input, select, textarea, .main-btn { width: 100%; padding: 14px; border-radius: 18px; border: 1.5px solid #f3aacb; margin-top: 8px; font-size: 16px; outline: none; }
         .main-btn { background: linear-gradient(135deg, #ff4f9b, #ff91c2); color: white; border: 0; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
         
-        /* החזרת עיצוב כפתור התנתקות המקורי */
         .logout-btn { background: white; color: #86526b; border: 1.5px solid #f3aacb; padding: 8px 12px; border-radius: 12px; font-size: 12px; cursor: pointer; }
         
         .secondary-btn { background: #f3f3f3; color: #86526b; border: 0; padding: 10px; border-radius: 15px; font-size: 13px; cursor: pointer; width: 100%; margin-top: 10px; }
@@ -50,12 +49,16 @@
         .alert-card { background: #fff8e1; border-right: 5px solid #ffc107; padding: 15px; border-radius: 18px; margin-bottom: 15px; font-size: 13px; color: #6d4c41; }
         .tip-card { background: #f3e5f5; border-right: 5px solid #9c27b0; padding: 15px; border-radius: 18px; margin-bottom: 15px; font-size: 13px; }
 
-        /* החזרת עיצוב לוח השנה המקורי */
         .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
         .day { min-height: 40px; border-radius: 10px; background: #fff7fb; display: flex; align-items: center; justify-content: center; font-size: 13px; }
         .period { background: #ff6fae !important; color: white !important; font-weight: bold; }
         .ovulation { background: #b45cff !important; color: white !important; }
         .today { border: 2px solid #ff4f9b; }
+
+        /* סגנון עבור ההיסטוריה המתקפלת */
+        #historyContent { display: none; margin-top: 10px; }
+        .toggle-arrow { transition: transform 0.3s; font-size: 14px; }
+        .toggle-arrow.open { transform: rotate(180deg); }
 
         .entry { background: #fff1f7; border-right: 5px solid #ff5fa2; padding: 15px; border-radius: 18px; margin-top: 10px; position: relative; }
         .delete-btn { position: absolute; left: 12px; top: 12px; border: 0; background: 0; cursor: pointer; font-size: 16px; }
@@ -128,17 +131,23 @@
             <div id="tipContent" class="tip-card"></div>
         </div>
 
+        <!-- היסטוריה מתקפלת -->
         <div class="card">
-            <div class="title">📖 היסטוריה</div>
-            <div id="list"></div>
-            <button onclick="exportData()" class="secondary-btn">📊 הורדת דוח לרופא</button>
-            <button onclick="toggleAppMode()" class="secondary-btn" style="background:#fff1f7">⚙️ החלפת מצב (רגיל/תכנון היריון)</button>
+            <div class="title" onclick="toggleHistory()">
+                <span>📖 היסטוריה</span>
+                <span id="historyArrow" class="toggle-arrow">▼</span>
+            </div>
+            <div id="historyContent">
+                <div id="list"></div>
+                <button onclick="exportData()" class="secondary-btn">📊 הורדת דוח לרופא</button>
+                <button onclick="toggleAppMode()" class="secondary-btn" style="background:#fff1f7">⚙️ החלפת מצב (רגיל/תכנון היריון)</button>
+            </div>
         </div>
     </div>
 
     <footer>
         <p>© כל הזכויות שמורות לאור שקפאתי</p>
-        <p>גרסת עדכון: 1.7.1v</p>
+        <p>גרסת עדכון: 1.7.2v</p>
     </footer>
 
     <script type="module">
@@ -166,6 +175,19 @@
         const tips = {
             regular: "<strong>תזונה בזמן מחזור:</strong> שילוב של מזונות עשירים במגנזיום (כמו שוקולד מריר) מסייע בהפחתת התכווצויות.",
             conception: "<strong>זיהוי חלון הפוריות:</strong> מעקב אחר הפרשות וטמפרטורת גוף יכול לעזור בזיהוי הימים הפוריים ביותר שלך."
+        };
+
+        // פונקציית קיפול ההיסטוריה
+        window.toggleHistory = () => {
+            const content = document.getElementById('historyContent');
+            const arrow = document.getElementById('historyArrow');
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+                arrow.classList.remove('open');
+            } else {
+                content.style.display = 'block';
+                arrow.classList.add('open');
+            }
         };
 
         function getGreeting() {
@@ -263,10 +285,11 @@
             renderCalendar(data, nextPeriod, ovulationDate);
             const list = document.getElementById("list");
             list.innerHTML = "";
-            data.slice(0, 5).forEach(e => {
+            // מציגים את כל הנתונים, הקיפול מנהל את העומס הויזואלי
+            data.forEach(e => {
                 const div = document.createElement('div');
                 div.className = 'entry';
-                div.innerHTML = `<button class="delete-btn">🗑️</button><strong>${new Date(e.date).toLocaleDateString('he-IL')}</strong><br><small>נמשך ${e.duration} ימים.</small>`;
+                div.innerHTML = `<button class="delete-btn">🗑️</button><strong>${new Date(e.date).toLocaleDateString('he-IL')}</strong><br><small>נמשך ${e.duration} ימים. ${e.notes || ''}</small>`;
                 div.querySelector('.delete-btn').onclick = async () => { if(confirm("למחוק?")) { await deleteDoc(doc(db, "users", currentUser.uid, "entries", e.id)); loadData(); } };
                 list.appendChild(div);
             });
