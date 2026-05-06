@@ -3,12 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>יומן מחזור Smart Pro</title>
+    <title>Perioday - יומן מחזור חכם</title>
     
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body {
@@ -30,12 +26,6 @@
         input, textarea, .main-btn {
             width: 100%; padding: 14px; border-radius: 18px; border: 1.5px solid #f3aacb; margin-top: 10px; font-size: 16px; outline: none;
         }
-        /* תיקון לשדה התאריך שלא יחרוג מהפינה */
-        input[type="date"] {
-            font-family: inherit;
-            -webkit-appearance: none;
-        }
-        
         .main-btn {
             background: linear-gradient(135deg, #ff4f9b, #ff91c2); color: white; border: 0; font-weight: bold; cursor: pointer;
             box-shadow: 0 6px 15px rgba(255, 79, 155, 0.3);
@@ -67,29 +57,29 @@
 <body>
     <div id="loginScreen" class="login-screen">
         <h1 style="font-size: 50px; margin-bottom: 10px;">🌸</h1>
-        <h2 style="color: #ff4f9b;">יומן מחזור חכם</h2>
-        <p style="margin-bottom: 25px; color: #86526b; padding: 0 20px;">התחברי כדי לשמור את הנתונים שלך בענן בצורה מאובטחת</p>
-        <button class="main-btn" onclick="login()" style="width: 80%;">התחברות עם Google 🚀</button>
+        <h2 style="color: #ff4f9b;">Perioday</h2>
+        <p style="margin-bottom: 25px; color: #86526b; padding: 0 20px;">התחברי כדי לשמור את הנתונים שלך בענן</p>
+        <button id="loginBtn" class="main-btn" style="width: 80%;">התחברות עם Google 🚀</button>
     </div>
 
     <div id="mainApp" class="app" style="display: none;">
         <div class="header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0 20px;">
             <h1 style="font-size: 20px;">🌸 שלום, <span id="userName"></span></h1>
-            <button class="logout-btn" onclick="logout()">התנתקות</button>
+            <button id="logoutBtn" class="logout-btn">התנתקות</button>
         </div>
 
         <div class="card">
             <div class="title">✨ רישום חדש</div>
             <input type="date" id="date">
-            <div class="symptoms">
-                <div class="symptom-tag" onclick="toggleSymptom(this)">🥨 מתוק</div>
-                <div class="symptom-tag" onclick="toggleSymptom(this)">⚡ כאב</div>
-                <div class="symptom-tag" onclick="toggleSymptom(this)">😴 עייפות</div>
-                <div class="symptom-tag" onclick="toggleSymptom(this)">😡 עצבנות</div>
-                <div class="symptom-tag" onclick="toggleSymptom(this)">🎈 נפיחות</div>
+            <div class="symptoms" id="symptomsList">
+                <div class="symptom-tag">🥨 מתוק</div>
+                <div class="symptom-tag">⚡ כאב</div>
+                <div class="symptom-tag">😴 עייפות</div>
+                <div class="symptom-tag">😡 עצבנות</div>
+                <div class="symptom-tag">🎈 נפיחות</div>
             </div>
             <textarea id="notes" rows="2" placeholder="איך את מרגישה היום?"></textarea>
-            <button class="main-btn" onclick="addEntry()">שמור בענן 💗</button>
+            <button id="saveBtn" class="main-btn">שמור בענן 💗</button>
         </div>
 
         <div class="card" id="predCard" style="display:none;">
@@ -99,9 +89,9 @@
 
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <button onclick="changeMonth(-1)" style="border:0; background:0; font-size:20px;">◀️</button>
+                <button id="prevMonth" style="border:0; background:0; font-size:20px;">◀️</button>
                 <strong id="monthTitle"></strong>
-                <button onclick="changeMonth(1)" style="border:0; background:0; font-size:20px;">▶️</button>
+                <button id="nextMonth" style="border:0; background:0; font-size:20px;">▶️</button>
             </div>
             <div id="calendar" class="calendar"></div>
         </div>
@@ -112,27 +102,36 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, getDocs, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
         const firebaseConfig = {
-            apiKey: "AIzaSyCdv3UObqCtVHj1Y7NMQoI4NgSHoYbsUfI",
-            authDomain: "period-52005.firebaseapp.com",
-            projectId: "period-52005",
-            storageBucket: "period-52005.firebasestorage.app",
-            messagingSenderId: "185159920438",
-            appId: "1:185159920438:web:879ee4ad37a76305cc2197"
+            apiKey: "AIzaSyC3GgMwsc-30RoK7bKiCdaw8P6kZz-hLfg",
+            authDomain: "perioday1.firebaseapp.com",
+            projectId: "perioday1",
+            storageBucket: "perioday1.firebasestorage.app",
+            messagingSenderId: "926275939384",
+            appId: "1:926275939384:web:7a40c16c0254bbc6038acd"
         };
-        
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
         let currentUser = null;
         let viewDate = new Date();
 
-        // ניהול מצב התחברות חכם משופר
-        auth.onAuthStateChanged(async (user) => {
-            const loginScreen = document.getElementById('loginScreen');
-            const mainApp = document.getElementById('mainApp');
+        // UI Elements
+        const loginScreen = document.getElementById('loginScreen');
+        const mainApp = document.getElementById('mainApp');
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const symptomsTags = document.querySelectorAll('.symptom-tag');
 
+        // Auth Logic
+        onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
                 document.getElementById('userName').innerText = user.displayName ? user.displayName.split(' ')[0] : "חברה";
@@ -141,103 +140,99 @@
                 document.getElementById("date").valueAsDate = new Date();
                 loadData();
             } else {
-                // בדיקה אם המשתמש בדיוק חזר מתהליך התחברות
-                try {
-                    const result = await auth.getRedirectResult();
-                    if (result && result.user) {
-                        // אם יש משתמש מה-Redirect, onAuthStateChanged יקרא שוב אוטומטית
-                        return;
-                    }
-                } catch (error) {
-                    console.error("שגיאה בחזרה מהתחברות:", error.message);
-                    if (error.code === 'auth/unauthorized-domain') {
-                        alert("שגיאה: הדומיין perioday.com לא מאושר ב-Firebase.");
-                    }
-                }
                 loginScreen.style.display = 'flex';
                 mainApp.style.display = 'none';
             }
         });
 
-        async function login() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            await auth.signInWithRedirect(provider);
-        }
-
-        async function logout() {
-            if(confirm("להתנתק מהחשבון?")) await auth.signOut();
-        }
-
-        function toggleSymptom(el) { el.classList.toggle('active'); }
-
-        async function addEntry() {
-            const date = document.getElementById("date").value;
-            if (!date || !currentUser) return alert("נא לבחור תאריך");
-            
-            const entry = {
-                date,
-                symptoms: Array.from(document.querySelectorAll('.symptom-tag.active')).map(el => el.innerText),
-                notes: document.getElementById("notes").value.trim(),
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            await db.collection("users").doc(currentUser.uid).collection("entries").add(entry);
-            document.getElementById("notes").value = "";
-            document.querySelectorAll('.symptom-tag').forEach(t => t.classList.remove('active'));
-            loadData();
-            alert("נשמר בהצלחה בענן! ✨");
-        }
-
-        async function deleteEntry(id) {
-            if(confirm("למחוק את הרישום?")) {
-                await db.collection("users").doc(currentUser.uid).collection("entries").doc(id).delete();
-                loadData();
+        loginBtn.onclick = async () => {
+            try {
+                const provider = new GoogleAuthProvider();
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Login failed", error);
+                alert("שגיאת התחברות. ודאי ש-perioday.com מאושר ב-Firebase Console");
             }
-        }
+        };
 
+        logoutBtn.onclick = () => signOut(auth);
+
+        // Symptoms Toggle
+        symptomsTags.forEach(tag => {
+            tag.onclick = () => tag.classList.toggle('active');
+        });
+
+        // Save Data
+        saveBtn.onclick = async () => {
+            const date = document.getElementById("date").value;
+            if (!date || !currentUser) return;
+
+            const symptoms = Array.from(document.querySelectorAll('.symptom-tag.active')).map(t => t.innerText);
+            const notes = document.getElementById("notes").value;
+
+            try {
+                await addDoc(collection(db, "users", currentUser.uid, "entries"), {
+                    date, symptoms, notes, timestamp: serverTimestamp()
+                });
+                document.getElementById("notes").value = "";
+                symptomsTags.forEach(t => t.classList.remove('active'));
+                loadData();
+                alert("נשמר! ✨");
+            } catch (e) {
+                console.error("Error adding document: ", e);
+            }
+        };
+
+        // Load & Render
         async function loadData() {
             if (!currentUser) return;
-            const snapshot = await db.collection("users").doc(currentUser.uid).collection("entries").orderBy("date", "desc").get();
-            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const q = query(collection(db, "users", currentUser.uid, "entries"), orderBy("date", "desc"));
+            const querySnapshot = await getDocs(q);
+            const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             render(data);
         }
 
         function render(data) {
+            // Prediction Logic
             const predCard = document.getElementById("predCard");
             if (data.length >= 2) {
                 predCard.style.display = "block";
                 let gaps = [];
                 for (let i = 0; i < data.length - 1; i++) {
-                    let d1 = new Date(data[i].date); 
-                    let d2 = new Date(data[i+1].date);
-                    let diff = Math.round((d1 - d2) / 86400000);
+                    let diff = Math.round((new Date(data[i].date) - new Date(data[i+1].date)) / 86400000);
                     if (diff > 20 && diff < 45) gaps.push(diff);
                 }
                 const avg = gaps.length ? Math.round(gaps.reduce((a,b)=>a+b)/gaps.length) : 28;
-                const next = new Date(data[0].date); 
-                next.setDate(next.getDate() + avg);
+                const next = new Date(data[0].date); next.setDate(next.getDate() + avg);
                 const diffDays = Math.ceil((next - new Date()) / 86400000);
-                const ovul = new Date(next); 
-                ovul.setDate(ovul.getDate() - 14);
-
+                
                 document.getElementById("prediction").innerHTML = `
                     <div class="box"><strong>המחזור הבא</strong><span>${next.toLocaleDateString('he-IL')}</span><div style="font-size:11px;color:#ff4f9b">בעוד ${diffDays} ימים</div></div>
-                    <div class="box"><strong>ביוץ משוער</strong><span>${ovul.toLocaleDateString('he-IL')}</span></div>
+                    <div class="box"><strong>ממוצע מחזור</strong><span>${avg} ימים</span></div>
                 `;
                 renderCalendar(data, next);
             } else {
-                predCard.style.display = "none";
                 renderCalendar(data, null);
             }
 
+            // List Rendering
             const list = document.getElementById("list");
             list.innerHTML = data.length ? "" : "<p style='text-align:center;'>אין נתונים</p>";
             data.slice(0, 5).forEach(e => {
-                list.innerHTML += `<div class="entry">
-                    <button class="delete-btn" onclick="deleteEntry('${e.id}')">🗑️</button>
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'entry';
+                entryDiv.innerHTML = `
+                    <button class="delete-btn">🗑️</button>
                     <strong>${new Date(e.date).toLocaleDateString('he-IL')}</strong><br>
                     <small>${e.symptoms.join(', ') || 'ללא תסמינים'}</small>
-                </div>`;
+                `;
+                entryDiv.querySelector('.delete-btn').onclick = async () => {
+                    if(confirm("למחוק?")) {
+                        await deleteDoc(doc(db, "users", currentUser.uid, "entries", e.id));
+                        loadData();
+                    }
+                };
+                list.appendChild(entryDiv);
             });
         }
 
@@ -255,25 +250,24 @@
             for (let d = 1; d <= daysInMonth; d++) {
                 const curr = new Date(year, month, d);
                 let cls = (new Date().toDateString() === curr.toDateString()) ? "today" : "";
+                
                 data.forEach(entry => {
                     const start = new Date(entry.date);
-                    const end = new Date(start); 
-                    end.setDate(end.getDate() + 4);
+                    const end = new Date(start); end.setDate(end.getDate() + 4);
                     if (curr >= start && curr <= end) cls += " period";
                 });
+
                 if (nextDate) {
-                    const ovul = new Date(nextDate); 
-                    ovul.setDate(ovul.getDate() - 14);
+                    const ovul = new Date(nextDate); ovul.setDate(ovul.getDate() - 14);
                     if (curr.toDateString() === ovul.toDateString()) cls += " ovulation";
                 }
                 cal.innerHTML += `<div class="day ${cls}">${d}</div>`;
             }
         }
 
-        function changeMonth(s) { 
-            viewDate.setMonth(viewDate.getMonth() + s); 
-            loadData(); 
-        }
+        document.getElementById("prevMonth").onclick = () => { viewDate.setMonth(viewDate.getMonth() - 1); loadData(); };
+        document.getElementById("nextMonth").onclick = () => { viewDate.setMonth(viewDate.getMonth() + 1); loadData(); };
+
     </script>
 </body>
 </html>
