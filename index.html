@@ -140,10 +140,16 @@
             }
         });
 
-        async function login() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            try { await auth.signInWithPopup(provider); } catch(e) { alert("שגיאת התחברות"); }
-        }
+async function login() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+        // שימוש ב-Redirect במקום Popup עוזר למנוע חסימות דפדפן
+        await auth.signInWithRedirect(provider);
+    } catch(e) {
+        console.error(e);
+        alert("שגיאת התחברות: " + e.message);
+    }
+}
 
         async function logout() {
             if(confirm("להתנתק מהחשבון?")) await auth.signOut();
