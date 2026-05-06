@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>יומן מחזור Smart Pro</title>
     
-    <!-- חיבור לספריות הענן של גוגל (Firebase) -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -16,106 +17,91 @@
             background: linear-gradient(160deg, #ffd6e8, #fff6fa);
             color: #351126;
             min-height: 100vh;
-            overflow-x: hidden;
         }
-        .app { max-width: 500px; margin: auto; padding: 15px; }
-        .header { text-align: center; padding: 20px; }
+        .app, .login-screen { max-width: 500px; margin: auto; padding: 20px; }
+        .login-screen { 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center;
+        }
         .card {
             background: white; border-radius: 25px; padding: 20px; margin-bottom: 15px;
             box-shadow: 0 10px 30px rgba(190, 70, 120, .1); width: 100%;
         }
         .title { font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #ff4f9b; display: flex; align-items: center; justify-content: space-between; }
         
-        label { display: block; margin-top: 15px; font-weight: bold; font-size: 14px; color: #5a203d; }
-        input, textarea {
-            width: 100%; padding: 14px; border: 1.5px solid #f3aacb; border-radius: 18px;
-            background: #fff7fb; font-size: 16px; outline: none; margin-top: 5px;
+        input, textarea, .main-btn {
+            width: 100%; padding: 14px; border-radius: 18px; border: 1.5px solid #f3aacb; margin-top: 10px; font-size: 16px; outline: none;
         }
-
+        .main-btn {
+            background: linear-gradient(135deg, #ff4f9b, #ff91c2); color: white; border: 0; font-weight: bold; cursor: pointer;
+            box-shadow: 0 6px 15px rgba(255, 79, 155, 0.3);
+        }
+        .logout-btn { background: #f3f3f3; color: #86526b; border: 0; padding: 8px 12px; border-radius: 12px; font-size: 12px; cursor: pointer; }
+        
         .symptoms { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
         .symptom-tag {
-            padding: 8px 12px; border: 1.5px solid #f3aacb; border-radius: 15px;
-            background: white; font-size: 13px; white-space: nowrap; cursor: pointer; flex-shrink: 0;
+            padding: 8px 12px; border: 1.5px solid #f3aacb; border-radius: 15px; background: white; font-size: 13px; white-space: nowrap; cursor: pointer; flex-shrink: 0;
         }
         .symptom-tag.active { background: #ff4f9b; color: white; border-color: #ff4f9b; }
-
-        .main-btn {
-            width: 100%; border: 0; border-radius: 20px; padding: 16px; margin-top: 15px;
-            background: linear-gradient(135deg, #ff4f9b, #ff91c2); color: white;
-            font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 6px 15px rgba(255, 79, 155, 0.3);
-        }
 
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .box { background: #fff1f7; border: 2px solid #ffd1e3; border-radius: 20px; padding: 12px; text-align: center; }
         .box strong { display: block; color: #873557; font-size: 12px; }
         .box span { display: block; font-size: 16px; font-weight: 800; }
-        .box .countdown { font-size: 11px; color: #ff4f9b; font-weight: bold; margin-top: 2px; }
-
-        .calendar-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+        
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
         .day { min-height: 40px; border-radius: 10px; background: #fff7fb; display: flex; align-items: center; justify-content: center; font-size: 13px; }
         .period { background: #ff6fae !important; color: white !important; font-weight: bold; }
         .ovulation { background: #b45cff !important; color: white !important; }
         .today { border: 2px solid #ff4f9b; }
 
-        .entry { background: #fff1f7; border-right: 5px solid #ff5fa2; padding: 12px; border-radius: 15px; margin-top: 10px; position: relative; }
-        .delete-btn { position: absolute; left: 10px; top: 10px; border: 0; background: 0; cursor: pointer; }
-
-        /* כפתור התראות */
-        .switch { position: relative; width: 40px; height: 20px; display: inline-block; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ccc; transition: .4s; border-radius: 20px; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background: #ff4f9b; }
-        input:checked + .slider:before { transform: translateX(20px); }
+        .entry { background: #fff1f7; border-right: 5px solid #ff5fa2; padding: 15px; border-radius: 18px; margin-top: 10px; position: relative; }
+        .delete-btn { position: absolute; left: 12px; top: 12px; border: 0; background: 0; cursor: pointer; font-size: 16px; }
     </style>
 </head>
 
 <body>
-    <div class="app">
-        <div class="header"><h1>🌸 יומן מחזור חכם</h1></div>
+    <!-- מסך כניסה -->
+    <div id="loginScreen" class="login-screen">
+        <h1 style="font-size: 50px; margin-bottom: 10px;">🌸</h1>
+        <h2 style="color: #ff4f9b;">יומן מחזור חכם</h2>
+        <p style="margin-bottom: 25px; color: #86526b; padding: 0 20px;">כל הנתונים שלך נשמרים בענן של גוגל בצורה מאובטחת</p>
+        <button class="main-btn" onclick="login()" style="width: 80%;">התחברות עם Google 🚀</button>
+    </div>
 
-        <!-- הגדרות התראות וענן -->
-        <div class="card">
-            <div class="title">⚙️ הגדרות
-                <label class="switch">
-                    <input type="checkbox" id="notifToggle" onclick="requestNotificationPermission()">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <p style="font-size: 12px; color: #86526b;">הפעילי התראות כדי לקבל תזכורת יומיים לפני המחזור.</p>
+    <!-- האפליקציה הראשית -->
+    <div id="mainApp" class="app" style="display: none;">
+        <div class="header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0 20px;">
+            <h1 style="font-size: 24px;">🌸 שלום, <span id="userName"></span></h1>
+            <button class="logout-btn" onclick="logout()">התנתקות</button>
         </div>
 
         <div class="card">
             <div class="title">✨ רישום חדש</div>
-            <label>תאריך תחילת וסת</label>
+            <label style="font-size: 13px; font-weight: bold;">תאריך תחילת וסת</label>
             <input type="date" id="date">
-            
-            <label>איך ההרגשה?</label>
-            <div class="symptoms" id="symptoms">
+            <div class="symptoms">
                 <div class="symptom-tag" onclick="toggleSymptom(this)">🥨 מתוק</div>
                 <div class="symptom-tag" onclick="toggleSymptom(this)">⚡ כאב</div>
-                <div class="symptom-tag" onclick="toggleSymptom(this)">🎈 נפיחות</div>
                 <div class="symptom-tag" onclick="toggleSymptom(this)">😴 עייפות</div>
                 <div class="symptom-tag" onclick="toggleSymptom(this)">😡 עצבנות</div>
+                <div class="symptom-tag" onclick="toggleSymptom(this)">🎈 נפיחות</div>
             </div>
-
-            <textarea id="notes" rows="2" placeholder="הערות..."></textarea>
-            <button class="main-btn" onclick="addEntry()">שמור וחשב תחזית 💗</button>
+            <textarea id="notes" rows="2" placeholder="איך את מרגישה היום? (הערות...)"></textarea>
+            <button class="main-btn" onclick="addEntry()">שמור בענן 💗</button>
         </div>
 
         <div class="card" id="predCard" style="display:none;">
-            <div class="title">🔮 תחזית אישית</div>
+            <div class="title">🔮 תחזית חכמה</div>
             <div id="prediction" class="grid"></div>
         </div>
 
         <div class="card">
-            <div class="calendar-head">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
                 <button onclick="changeMonth(-1)" style="border:0; background:0; font-size:20px;">◀️</button>
                 <strong id="monthTitle"></strong>
                 <button onclick="changeMonth(1)" style="border:0; background:0; font-size:20px;">▶️</button>
             </div>
-            <div class="calendar" id="calendar"></div>
+            <div id="calendar" class="calendar"></div>
         </div>
 
         <div class="card">
@@ -125,95 +111,112 @@
     </div>
 
     <script>
-        // --- קונפיגורציה של FIREBASE (הדביקי כאן את שלך) ---
         const firebaseConfig = {
-  apiKey: "AIzaSyCdv3UObqCtVHj1Y7NMQoI4NgSHoYbsUfI",
-  authDomain: "period-52005.firebaseapp.com",
-  projectId: "period-52005",
-  storageBucket: "period-52005.firebasestorage.app",
-  messagingSenderId: "185159920438",
-  appId: "1:185159920438:web:879ee4ad37a76305cc2197"
+            apiKey: "AIzaSyCdv3UObqCtVHj1Y7NMQoI4NgSHoYbsUfI",
+            authDomain: "period-52005.firebaseapp.com",
+            projectId: "period-52005",
+            storageBucket: "period-52005.firebasestorage.app",
+            messagingSenderId: "185159920438",
+            appId: "1:185159920438:web:879ee4ad37a76305cc2197"
         };
-        // במידה ולא הגדרת Firebase, האפליקציה תשתמש בזיכרון המקומי בלבד
-        let db = null;
-        try { firebase.initializeApp(firebaseConfig); db = firebase.firestore(); } catch(e) {}
-
-        const KEY = "period_pro_v2";
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        let currentUser = null;
         let viewDate = new Date();
 
-        document.addEventListener("DOMContentLoaded", () => {
-            document.getElementById("date").valueAsDate = new Date();
-            render();
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('userName').innerText = user.displayName.split(' ')[0];
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById("date").valueAsDate = new Date();
+                loadData();
+            } else {
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('mainApp').style.display = 'none';
+            }
         });
 
+        async function login() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try { await auth.signInWithPopup(provider); } catch(e) { alert("שגיאת התחברות"); }
+        }
+
+        async function logout() {
+            if(confirm("להתנתק מהחשבון?")) await auth.signOut();
+        }
+
         function toggleSymptom(el) { el.classList.toggle('active'); }
-        function getData() { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
-        function saveData(data) { 
-            localStorage.setItem(KEY, JSON.stringify(data));
-            if(db) { /* כאן אפשר להוסיף שמירה ל-Firestore */ }
-        }
 
-        async function requestNotificationPermission() {
-            const permission = await Notification.requestPermission();
-            if (permission !== 'granted') {
-                document.getElementById('notifToggle').checked = false;
-                alert("יש לאשר התראות בדפדפן.");
-            } else {
-                alert("התראות הופעלו! ✨");
-            }
-        }
-
-        function addEntry() {
+        async function addEntry() {
             const date = document.getElementById("date").value;
-            if (!date) return alert("בחרי תאריך");
-            const symptoms = Array.from(document.querySelectorAll('.symptom-tag.active')).map(el => el.innerText);
-            const notes = document.getElementById("notes").value.trim();
+            if (!date) return alert("נא לבחור תאריך");
             
-            const data = getData();
-            data.unshift({ id: Date.now(), date, symptoms, notes });
-            saveData(data);
-            
+            const entry = {
+                date,
+                symptoms: Array.from(document.querySelectorAll('.symptom-tag.active')).map(el => el.innerText),
+                notes: document.getElementById("notes").value.trim(),
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            await db.collection("users").doc(currentUser.uid).collection("entries").add(entry);
             document.getElementById("notes").value = "";
             document.querySelectorAll('.symptom-tag').forEach(t => t.classList.remove('active'));
-            render();
-            alert("הוזן בהצלחה! ✅");
+            loadData();
+            alert("נשמר בהצלחה בענן! ✨");
         }
 
-        function calculateCycle() {
-            const data = getData();
-            if (data.length < 2) return { avg: 28, next: null };
-            let gaps = [];
-            for (let i = 0; i < data.length - 1; i++) {
-                let diff = Math.round((new Date(data[i].date) - new Date(data[i+1].date)) / 86400000);
-                if (diff > 20 && diff < 45) gaps.push(diff);
+        async function deleteEntry(id) {
+            if(confirm("למחוק את הרישום?")) {
+                await db.collection("users").doc(currentUser.uid).collection("entries").doc(id).delete();
+                loadData();
             }
-            const avg = gaps.length ? Math.round(gaps.reduce((a,b)=>a+b)/gaps.length) : 28;
-            const next = new Date(data[0].date); next.setDate(next.getDate() + avg);
-            return { avg, next };
         }
 
-        function render() {
-            const data = getData();
-            const { avg, next } = calculateCycle();
+        async function loadData() {
+            const snapshot = await db.collection("users").doc(currentUser.uid).collection("entries").orderBy("date", "desc").get();
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            render(data);
+        }
+
+        function render(data) {
+            // תחזית
             const predCard = document.getElementById("predCard");
-            
-            if (data.length) {
+            if (data.length >= 2) {
                 predCard.style.display = "block";
-                const nextDate = next || new Date(new Date(data[0].date).setDate(new Date(data[0].date).getDate() + 28));
-                const diff = Math.ceil((nextDate - new Date()) / 86400000);
-                const ovul = new Date(nextDate); ovul.setDate(ovul.getDate() - 14);
+                let gaps = [];
+                for (let i = 0; i < data.length - 1; i++) {
+                    let d1 = new Date(data[i].date); let d2 = new Date(data[i+1].date);
+                    let diff = Math.round((d1 - d2) / 86400000);
+                    if (diff > 20 && diff < 45) gaps.push(diff);
+                }
+                const avg = gaps.length ? Math.round(gaps.reduce((a,b)=>a+b)/gaps.length) : 28;
+                const next = new Date(data[0].date); next.setDate(next.getDate() + avg);
+                const diff = Math.ceil((next - new Date()) / 86400000);
+                const ovul = new Date(next); ovul.setDate(ovul.getDate() - 14);
 
                 document.getElementById("prediction").innerHTML = `
-                    <div class="box"><strong>המחזור הבא</strong><span>${nextDate.toLocaleDateString('he-IL')}</span><div class="countdown">בעוד ${diff} ימים</div></div>
+                    <div class="box"><strong>המחזור הבא</strong><span>${next.toLocaleDateString('he-IL')}</span><div style="font-size:11px;color:#ff4f9b">בעוד ${diff} ימים</div></div>
                     <div class="box"><strong>ביוץ משוער</strong><span>${ovul.toLocaleDateString('he-IL')}</span></div>
                 `;
+                renderCalendar(data, next);
+            } else {
+                predCard.style.display = "none";
+                renderCalendar(data, null);
             }
 
-            renderCalendar(data, next);
+            // היסטוריה
             const list = document.getElementById("list");
-            list.innerHTML = data.length ? "" : "<p style='text-align:center;'>אין רישומים</p>";
-            data.slice(0, 3).forEach(e => {
-                list.innerHTML += `<div class="entry"><strong>${new Date(e.date).toLocaleDateString('he-IL')}</strong><br><small>${e.symptoms.join(', ')}</small></div>`;
+            list.innerHTML = data.length ? "" : "<p style='text-align:center;'>אין נתונים</p>";
+            data.slice(0, 5).forEach(e => {
+                list.innerHTML += `<div class="entry">
+                    <button class="delete-btn" onclick="deleteEntry('${e.id}')">🗑️</button>
+                    <strong>${new Date(e.date).toLocaleDateString('he-IL')}</strong><br>
+                    <small>${e.symptoms.join(', ') || 'ללא תסמינים'}</small>
+                </div>`;
             });
         }
 
@@ -244,7 +247,7 @@
             }
         }
 
-        function changeMonth(s) { viewDate.setMonth(viewDate.getMonth() + s); render(); }
+        function changeMonth(s) { viewDate.setMonth(viewDate.getMonth() + s); loadData(); }
     </script>
 </body>
 </html>
