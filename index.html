@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <!-- קידום ושיווק (SEO & Social Media) -->
-    <title>Perioday - יומן מחזור וביוץ חכם</title>
-    <meta name="description" content="Perioday - האפליקציה האישית שלך למעקב אחר מחזור, חישוב ימי ביוץ וחלון פוריות. פשוט, מאובטח ומדויק.">
-    <meta name="keywords" content="מחזור, ביוץ, מחשבון ביוץ, יומן מחזור, פוריות, מעקב מחזור">
-    <meta property="og:title" content="Perioday - דעי מתי המחזור והביוץ שלך">
-    <meta property="og:description" content="עקבי אחרי המחזור החודשי שלך בקלות עם Perioday.">
-    <meta property="og:type" content="website">
+    <!-- קידום ושיווק (SEO) -->
+    <title>Perioday - היומן שלך לאיזון, מחזור ופוריות</title>
+    <meta name="description" content="Perioday - האפליקציה האישית שלך למעקב אחר מחזור, חישוב ימי ביוץ וחלון פוריות.">
+    <meta property="og:title" content="Perioday - יומן מחזור חכם">
     <meta name="author" content="אור שקפאתי">
 
     <style>
@@ -26,7 +23,6 @@
         .app, .login-screen, .setup-screen { max-width: 500px; margin: auto; padding: 20px; width: 100%; flex: 1; }
         .login-screen, .setup-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         
-        /* לוגו מרכזי */
         .logo-container { text-align: center; margin-bottom: 25px; }
         .logo-icon {
             width: 75px; height: 75px; background: linear-gradient(135deg, #ff4f9b, #ff91c2);
@@ -37,19 +33,20 @@
         .logo-text { font-size: 28px; font-weight: 800; color: #ff4f9b; }
         .tagline { font-size: 14px; color: #86526b; margin-top: 4px; font-weight: 500; }
 
-        /* לוגו קטן בכותרת האפליקציה */
-        .header-logo { display: flex; align-items: center; gap: 10px; }
+        /* כותרת בתוך האפליקציה */
+        .header-logo { display: flex; align-items: center; gap: 12px; }
         .logo-icon-small {
-            width: 35px; height: 35px; background: linear-gradient(135deg, #ff4f9b, #ff91c2);
-            border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            font-size: 20px; color: white; box-shadow: 0 4px 8px rgba(255, 79, 155, 0.2);
+            width: 40px; height: 40px; background: linear-gradient(135deg, #ff4f9b, #ff91c2);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-size: 22px; color: white; box-shadow: 0 4px 10px rgba(255, 79, 155, 0.2);
         }
 
         .card { background: white; border-radius: 25px; padding: 20px; margin-bottom: 15px; box-shadow: 0 10px 30px rgba(190, 70, 120, .1); }
         .title { font-size: 18px; font-weight: bold; margin-bottom: 12px; color: #ff4f9b; display: flex; align-items: center; gap: 8px; }
         
         input, select, textarea, .main-btn { width: 100%; padding: 14px; border-radius: 18px; border: 1.5px solid #f3aacb; margin-top: 8px; font-size: 16px; outline: none; }
-        .main-btn { background: linear-gradient(135deg, #ff4f9b, #ff91c2); color: white; border: 0; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .main-btn { background: linear-gradient(135deg, #ff4f9b, #ff91c2); color: white; border: 0; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
+        .main-btn:active { transform: scale(0.98); }
         .logout-btn { background: #f3f3f3; color: #86526b; border: 0; padding: 8px 12px; border-radius: 12px; font-size: 12px; cursor: pointer; }
         
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -76,7 +73,7 @@
         <div class="logo-container">
             <div class="logo-icon">🌸</div>
             <div class="logo-text">Perioday</div>
-            <div class="tagline">היומן האישי שלך למעקב מחזור וביוץ</div>
+            <div class="tagline">היומן שלך לאיזון, מחזור ופוריות</div>
         </div>
         <button id="loginBtn" class="main-btn" style="width: 80%;">כניסה עם Google 🚀</button>
     </div>
@@ -92,12 +89,12 @@
 
     <!-- אפליקציה ראשית -->
     <div id="mainApp" class="app" style="display: none;">
-        <div class="header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0 15px;">
+        <div class="header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0 20px;">
             <div class="header-logo">
                 <div class="logo-icon-small">🌸</div>
                 <div>
                     <div id="greeting" style="font-weight: bold; color: #ff4f9b; font-size: 16px;">שלום</div>
-                    <div class="tagline" style="text-align:right; margin:0; font-size:10px;">דעי מתי הביוץ שלך</div>
+                    <div class="tagline" style="text-align:right; margin:0; font-size:10px;">היומן שלך לאיזון, מחזור ופוריות</div>
                 </div>
             </div>
             <button id="logoutBtn" class="logout-btn">התנתקות</button>
@@ -113,7 +110,7 @@
                 <option value="5" selected>5 ימים</option><option value="6">6 ימים</option>
                 <option value="7">7 ימים</option><option value="8">8 ימים</option>
             </select>
-            <textarea id="notes" rows="2" placeholder="הערות (אופציונלי)..." style="margin-top: 12px;"></textarea>
+            <textarea id="notes" rows="2" placeholder="איך את מרגישה היום? (אופציונלי)" style="margin-top: 12px;"></textarea>
             <button id="saveBtn" class="main-btn">שמירה ביומן ✨</button>
         </div>
 
@@ -139,7 +136,7 @@
 
     <footer>
         <p>© כל הזכויות שמורות לאור שקפאתי</p>
-        <p>גרסת עדכון: 1.5.1v</p>
+        <p>גרסת עדכון: 1.5.3v</p>
     </footer>
 
     <script type="module">
