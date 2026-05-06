@@ -5,13 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>יומן מחזור Smart Pro</title>
     
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        /* התיקון הקריטי ליישור: box-sizing מבטיח שהאלמנטים לא יחרגו מהשוליים */
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background: linear-gradient(160deg, #ffd6e8, #fff6fa);
@@ -19,22 +25,43 @@
             min-height: 100vh;
         }
         .app, .login-screen { max-width: 500px; margin: auto; padding: 20px; }
+        
         .login-screen { 
             display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center;
         }
+        
         .card {
             background: white; border-radius: 25px; padding: 20px; margin-bottom: 15px;
             box-shadow: 0 10px 30px rgba(190, 70, 120, .1); width: 100%;
         }
+        
         .title { font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #ff4f9b; display: flex; align-items: center; justify-content: space-between; }
         
+        /* תיקון שדה התאריך ושאר השדות */
         input, textarea, .main-btn {
-            width: 100%; padding: 14px; border-radius: 18px; border: 1.5px solid #f3aacb; margin-top: 10px; font-size: 16px; outline: none;
+            width: 100%; 
+            display: block; /* חשוב ליישור */
+            padding: 14px; 
+            border-radius: 18px; 
+            border: 1.5px solid #f3aacb; 
+            margin-top: 10px; 
+            font-size: 16px; 
+            outline: none;
+            background: white;
+            font-family: inherit;
         }
+
+        /* ספציפית לשדה התאריך למניעת חריגה מהפינה */
+        input[type="date"] {
+            -webkit-appearance: none;
+            text-align: center; /* ממרכז את הטקסט בתוך השדה */
+        }
+
         .main-btn {
             background: linear-gradient(135deg, #ff4f9b, #ff91c2); color: white; border: 0; font-weight: bold; cursor: pointer;
             box-shadow: 0 6px 15px rgba(255, 79, 155, 0.3);
         }
+        
         .logout-btn { background: #f3f3f3; color: #86526b; border: 0; padding: 8px 12px; border-radius: 12px; font-size: 12px; cursor: pointer; }
         
         .symptoms { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
@@ -60,7 +87,6 @@
 </head>
 
 <body>
-    <!-- מסך כניסה -->
     <div id="loginScreen" class="login-screen">
         <h1 style="font-size: 50px; margin-bottom: 10px;">🌸</h1>
         <h2 style="color: #ff4f9b;">יומן מחזור חכם</h2>
@@ -68,7 +94,6 @@
         <button class="main-btn" onclick="login()" style="width: 80%;">התחברות עם Google 🚀</button>
     </div>
 
-    <!-- האפליקציה הראשית -->
     <div id="mainApp" class="app" style="display: none;">
         <div class="header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0 20px;">
             <h1 style="font-size: 20px;">🌸 שלום, <span id="userName"></span></h1>
@@ -112,7 +137,7 @@
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCdv3UObqCtVHj1Y7NMQoI4NgSHoYbsUfI",
-            authDomain: "period-52005.firebaseapp.com",
+            authDomain: "period-52005.firebaseapp.com", // להשאיר ככה!
             projectId: "period-52005",
             storageBucket: "period-52005.firebasestorage.app",
             messagingSenderId: "185159920438",
@@ -125,7 +150,6 @@
         let currentUser = null;
         let viewDate = new Date();
 
-        // ניהול מצב התחברות חכם הכולל Redirect
         auth.onAuthStateChanged(async (user) => {
             const loginScreen = document.getElementById('loginScreen');
             const mainApp = document.getElementById('mainApp');
@@ -138,12 +162,6 @@
                 document.getElementById("date").valueAsDate = new Date();
                 loadData();
             } else {
-                try {
-                    const result = await auth.getRedirectResult();
-                    if (result && result.user) return; 
-                } catch (error) {
-                    console.error("שגיאת התחברות:", error);
-                }
                 loginScreen.style.display = 'flex';
                 mainApp.style.display = 'none';
             }
@@ -151,6 +169,7 @@
 
         async function login() {
             const provider = new firebase.auth.GoogleAuthProvider();
+            // שימוש ב-Redirect במקום Popup לטובת דפדפנים בנייד
             await auth.signInWithRedirect(provider);
         }
 
@@ -176,13 +195,6 @@
             document.querySelectorAll('.symptom-tag').forEach(t => t.classList.remove('active'));
             loadData();
             alert("נשמר בהצלחה בענן! ✨");
-        }
-
-        async function deleteEntry(id) {
-            if(confirm("למחוק את הרישום?")) {
-                await db.collection("users").doc(currentUser.uid).collection("entries").doc(id).delete();
-                loadData();
-            }
         }
 
         async function loadData() {
@@ -229,6 +241,13 @@
                     <small>${e.symptoms.join(', ') || 'ללא תסמינים'}</small>
                 </div>`;
             });
+        }
+
+        async function deleteEntry(id) {
+            if(confirm("למחוק את הרישום?")) {
+                await db.collection("users").doc(currentUser.uid).collection("entries").doc(id).delete();
+                loadData();
+            }
         }
 
         function renderCalendar(data, nextDate) {
