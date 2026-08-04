@@ -3,167 +3,843 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
+
     <title>Perioday - היומן שלך לאיזון, מחזור ופוריות</title>
     <meta name="description" content="Perioday - האפליקציה האישית שלך למעקב אחר מחזור, חישוב ימי ביוץ וחלון פוריות.">
     <meta name="author" content="אור שקפאתי">
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(160deg, #ffd6e8, #fff6fa);
-            color: #351126;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #f8f4ff 0%, #ffe8f0 100%);
+            color: #2c1f2f;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
-        .app, .login-screen, .setup-screen { max-width: 500px; margin: auto; padding: 20px; width: 100%; flex: 1; }
-        .login-screen, .setup-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        
-        .logo-container { text-align: center; margin-bottom: 25px; }
-        .logo-icon {
-            width: 75px; height: 75px; background: linear-gradient(135deg, #ff4f9b, #ff91c2);
-            border-radius: 22px; display: flex; align-items: center; justify-content: center;
-            font-size: 42px; margin: 0 auto 15px; box-shadow: 0 10px 20px rgba(255, 79, 155, 0.3);
-            color: white;
+
+        .container { max-width: 480px; width: 100%; margin: auto; flex: 1; }
+
+        /* Login & Register Screens */
+        .auth-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            min-height: 100vh;
         }
-        .logo-text { font-size: 28px; font-weight: 800; color: #ff4f9b; }
-        .tagline { font-size: 14px; color: #86526b; margin-top: 4px; font-weight: 500; }
 
-        .card { background: white; border-radius: 25px; padding: 20px; margin-bottom: 15px; box-shadow: 0 10px 30px rgba(190, 70, 120, .1); }
-        .title { font-size: 18px; font-weight: bold; margin-bottom: 12px; color: #ff4f9b; display: flex; align-items: center; gap: 8px; cursor: pointer; }
-        
-        input, select, textarea, .main-btn { width: 100%; padding: 14px; border-radius: 18px; border: 1.5px solid #f3aacb; margin-top: 8px; font-size: 16px; outline: none; }
-        .main-btn { background: linear-gradient(135deg, #ff4f9b, #ff91c2); color: white; border: 0; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
-        
-        .logout-btn { background: white; color: #86526b; border: 1.5px solid #f3aacb; padding: 8px 12px; border-radius: 12px; font-size: 12px; cursor: pointer; }
-        
-        .secondary-btn { background: #f3f3f3; color: #86526b; border: 0; padding: 12px; border-radius: 15px; font-size: 14px; cursor: pointer; width: 100%; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .box { background: #fff1f7; border: 1px solid #ffd1e3; border-radius: 18px; padding: 12px; text-align: center; }
-        .box strong { display: block; color: #873557; font-size: 11px; margin-bottom: 4px; }
-        .box span { font-size: 14px; font-weight: 800; color: #ff4f9b; }
-        
-        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
-        .day { min-height: 40px; border-radius: 10px; background: #fff7fb; display: flex; align-items: center; justify-content: center; font-size: 13px; }
-        .period { background: #ff6fae !important; color: white !important; font-weight: bold; }
-        .ovulation { background: #b45cff !important; color: white !important; }
-        .today { border: 2px solid #ff4f9b; }
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
 
-        #historyContent { display: none; margin-top: 10px; }
-        .toggle-arrow { transition: transform 0.3s; font-size: 14px; }
-        .toggle-arrow.open { transform: rotate(180deg); }
+        .logo {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, #ff5fb8, #ff8ad6);
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            margin: 0 auto 20px;
+            box-shadow: 0 15px 35px rgba(255, 95, 184, 0.25);
+        }
 
-        .entry { background: #fff1f7; border-right: 5px solid #ff5fa2; padding: 15px; border-radius: 18px; margin-top: 10px; position: relative; }
-        .delete-btn { position: absolute; left: 12px; top: 12px; border: 0; background: 0; cursor: pointer; font-size: 16px; }
+        .logo-title {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff5fb8, #ff8ad6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
 
-        footer { text-align: center; padding: 20px; font-size: 11px; color: #a37b8e; line-height: 1.6; }
+        .logo-subtitle {
+            font-size: 14px;
+            color: #8b6a8f;
+            font-weight: 500;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c1f2f;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="email"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e8d5e8;
+            border-radius: 14px;
+            font-size: 16px;
+            font-family: inherit;
+            outline: none;
+            transition: 0.2s;
+            background: white;
+            color: #2c1f2f;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        input[type="email"]:focus,
+        input[type="date"]:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #ff5fb8;
+            box-shadow: 0 0 0 3px rgba(255, 95, 184, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff5fb8, #ff8ad6);
+            color: white;
+            margin-top: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 95, 184, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #ff5fb8;
+            border: 2px solid #ff5fb8;
+            margin-top: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: #fff5fa;
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 14px;
+            width: auto;
+        }
+
+        .btn-text {
+            background: none;
+            border: none;
+            color: #ff5fb8;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 0;
+        }
+
+        .btn-text:hover {
+            text-decoration: underline;
+        }
+
+        /* Auth Forms */
+        .auth-form {
+            width: 100%;
+            max-width: 350px;
+        }
+
+        .form-footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #8b6a8f;
+        }
+
+        .form-footer a {
+            color: #ff5fb8;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Main App */
+        .app {
+            display: none;
+            padding: 20px;
+            padding-bottom: 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 15px 0;
+        }
+
+        .greeting {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c1f2f;
+        }
+
+        .greeting-sub {
+            font-size: 12px;
+            color: #8b6a8f;
+            margin-top: 4px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-logout {
+            background: white;
+            border: 2px solid #e8d5e8;
+            color: #8b6a8f;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn-logout:hover {
+            border-color: #ff5fb8;
+            color: #ff5fb8;
+        }
+
+        /* Card */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 22px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 24px rgba(44, 31, 47, 0.08);
+            border: 1px solid #f0e6f0;
+        }
+
+        .card-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #2c1f2f;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .card-title-icon {
+            margin-left: 8px;
+            font-size: 20px;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #fff5fa, #f0e6f0);
+            border: 1px solid #e8d5e8;
+            border-radius: 14px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #8b6a8f;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ff5fb8;
+        }
+
+        /* Calendar */
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border-radius: 10px;
+            background: #f8f4ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: #2c1f2f;
+        }
+
+        .calendar-day.period {
+            background: #ff5fb8;
+            color: white;
+            font-weight: 700;
+        }
+
+        .calendar-day.ovulation {
+            background: #c084ff;
+            color: white;
+            font-weight: 700;
+        }
+
+        .calendar-day.today {
+            border: 2px solid #ff5fb8;
+        }
+
+        /* Entry */
+        .entry {
+            background: linear-gradient(135deg, #fff5fa, #f8f4ff);
+            border-right: 4px solid #ff5fb8;
+            padding: 14px;
+            border-radius: 14px;
+            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .entry-content {
+            flex: 1;
+            text-align: right;
+        }
+
+        .entry-date {
+            font-weight: 700;
+            color: #2c1f2f;
+            font-size: 14px;
+        }
+
+        .entry-info {
+            font-size: 13px;
+            color: #8b6a8f;
+            margin-top: 4px;
+        }
+
+        .btn-delete {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            margin-left: 10px;
+            opacity: 0.6;
+            transition: 0.2s;
+        }
+
+        .btn-delete:hover {
+            opacity: 1;
+        }
+
+        /* Toggle */
+        .toggle-arrow {
+            transition: transform 0.3s;
+            font-size: 12px;
+        }
+
+        .toggle-arrow.open {
+            transform: rotate(180deg);
+        }
+
+        #historyContent {
+            display: none;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 11px;
+            color: #a37b8e;
+            line-height: 1.6;
+        }
+
+        /* Utilities */
+        .hidden { display: none; }
+        .error { color: #ff5fb8; font-size: 13px; margin-top: 4px; }
+        .success { color: #4caf50; font-size: 13px; margin-top: 4px; }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container { padding: 0; }
+            .logo { width: 75px; height: 75px; font-size: 42px; }
+            .logo-title { font-size: 28px; }
+        }
     </style>
 </head>
 
 <body>
-    <div id="loginScreen" class="login-screen">
-        <div class="logo-container">
-            <div class="logo-icon">🌸</div>
-            <div class="logo-text">Perioday</div>
-            <div class="tagline">היומן שלך לאיזון, מחזור ופוריות</div>
-        </div>
-        <button id="loginBtn" class="main-btn" style="width: 80%;">כניסה עם Google 🚀</button>
-    </div>
-
-    <div id="setupScreen" class="setup-screen" style="display: none;">
-        <div class="logo-icon">✨</div>
-        <h2>נעים להכיר!</h2>
-        <input type="text" id="customName" placeholder="איך תרצי שנקרא לך?">
-        <label style="font-size: 13px; margin-top: 15px; color: #86526b;">בחרי מצב שימוש:</label>
-        <select id="initialMode">
-            <option value="regular">מעקב מחזור רגיל</option>
-            <option value="conception">תכנון היריון</option>
-        </select>
-        <button id="saveNameBtn" class="main-btn">בואי נתחיל 🌸</button>
-    </div>
-
-    <div id="mainApp" class="app" style="display: none;">
-        <div class="header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0 20px;">
-            <div>
-                <div id="greeting" style="font-weight: bold; color: #ff4f9b; font-size: 18px;">שלום</div>
-                <div id="modeDisplay" style="font-size: 10px; color: #86526b;">מצב: מעקב רגיל</div>
+    <div class="container">
+        <!-- Login Screen -->
+        <div id="loginScreen" class="auth-screen hidden">
+            <div class="logo-section">
+                <div class="logo">🌸</div>
+                <div class="logo-title">Perioday</div>
+                <div class="logo-subtitle">היומן שלך לאיזון, מחזור ופוריות</div>
             </div>
-            <button id="logoutBtn" class="logout-btn">התנתקות</button>
-        </div>
 
-        <div class="card">
-            <div class="title">📅 הזנת מחזור חדש</div>
-            <input type="date" id="date">
-            <select id="duration">
-                <option value="3">3 ימים</option><option value="4">4 ימים</option>
-                <option value="5" selected>5 ימים</option><option value="6">6 ימים</option>
-                <option value="7">7 ימים</option>
-            </select>
-            <textarea id="notes" rows="2" placeholder="הערות אופציונליות..."></textarea>
-            <button id="saveBtn" class="main-btn">שמירה ביומן ✨</button>
-        </div>
+            <form class="auth-form" id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">שם משתמש</label>
+                    <input type="text" id="loginUsername" placeholder="הכנס שם משתמש" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">סיסמה</label>
+                    <input type="password" id="loginPassword" placeholder="הכנס סיסמה" required>
+                </div>
+                <div id="loginError" class="error hidden"></div>
+                <button type="submit" class="btn btn-primary">כניסה</button>
+            </form>
 
-        <div class="card" id="predCard" style="display:none;">
-            <div class="title">🔮 תחזית וביוץ</div>
-            <div id="prediction" class="grid"></div>
-        </div>
-
-        <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <button id="prevMonth" style="border:0; background:0; font-size:20px;">◀️</button>
-                <strong id="monthTitle"></strong>
-                <button id="nextMonth" style="border:0; background:0; font-size:20px;">▶️</button>
+            <div class="form-footer">
+                עדיין אין חשבון?
+                <button type="button" class="btn-text" onclick="switchToRegister()">הירשם כאן</button>
             </div>
-            <div id="calendar" class="calendar"></div>
         </div>
 
-        <!-- כרטיס ניהול והגדרות חדש -->
-        <div class="card">
-            <div class="title">⚙️ ניהול והגדרות</div>
-            <button onclick="exportData()" class="secondary-btn">📊 הורדת דוח לרופא (PDF/TXT)</button>
-            <button onclick="toggleAppMode()" class="secondary-btn" style="background:#fff1f7">🔄 החלפת מצב (רגיל / תכנון היריון)</button>
-        </div>
-
-        <div class="card">
-            <div class="title" onclick="toggleHistory()">
-                <span>📖 היסטוריה</span>
-                <span id="historyArrow" class="toggle-arrow">▼</span>
+        <!-- Register Screen -->
+        <div id="registerScreen" class="auth-screen hidden">
+            <div class="logo-section">
+                <div class="logo">✨</div>
+                <div class="logo-title">הצטרפות</div>
+                <div class="logo-subtitle">בואי ניצור חשבון חדש</div>
             </div>
-            <div id="historyContent">
-                <div id="list"></div>
+
+            <form class="auth-form" id="registerForm">
+                <div class="form-group">
+                    <label class="form-label">שם מלא</label>
+                    <input type="text" id="registerName" placeholder="הכנס שמך" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">שם משתמש</label>
+                    <input type="text" id="registerUsername" placeholder="בחר שם משתמש" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">סיסמה</label>
+                    <input type="password" id="registerPassword" placeholder="בחר סיסמה חזקה" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">אישור סיסמה</label>
+                    <input type="password" id="registerPasswordConfirm" placeholder="אשר סיסמה" required>
+                </div>
+                <div id="registerError" class="error hidden"></div>
+                <button type="submit" class="btn btn-primary">הצטרף</button>
+            </form>
+
+            <div class="form-footer">
+                כבר יש לך חשבון?
+                <button type="button" class="btn-text" onclick="switchToLogin()">כנס כאן</button>
+            </div>
+        </div>
+
+        <!-- Setup Screen -->
+        <div id="setupScreen" class="auth-screen hidden">
+            <div class="logo-section">
+                <div class="logo">⚙️</div>
+                <div class="logo-title">הגדרות התחלתיות</div>
+                <div class="logo-subtitle">בואי נהכין את החשבון שלך</div>
+            </div>
+
+            <form class="auth-form" id="setupForm">
+                <div class="form-group">
+                    <label class="form-label">בחרי מצב שימוש:</label>
+                    <select id="initialMode">
+                        <option value="regular">מעקב מחזור רגיל</option>
+                        <option value="conception">תכנון היריון</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">בואי נתחיל 🌸</button>
+            </form>
+        </div>
+
+        <!-- Main App -->
+        <div id="mainApp" class="app hidden">
+            <div class="header">
+                <div>
+                    <div id="greeting" class="greeting">שלום</div>
+                    <div id="modeDisplay" class="greeting-sub">מצב: מעקב רגיל</div>
+                </div>
+                <div class="header-actions">
+                    <button id="logoutBtn" class="btn-logout">התנתקות</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span>📅 הזנת מחזור חדש</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">תאריך</label>
+                    <input type="date" id="date">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">משך</label>
+                    <select id="duration">
+                        <option value="3">3 ימים</option>
+                        <option value="4">4 ימים</option>
+                        <option value="5" selected>5 ימים</option>
+                        <option value="6">6 ימים</option>
+                        <option value="7">7 ימים</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">הערות (אופציונלי)</label>
+                    <textarea id="notes" rows="2" placeholder="תיאור או הערות..."></textarea>
+                </div>
+                <button id="saveBtn" class="btn btn-primary">שמירה ביומן ✨</button>
+            </div>
+
+            <div class="card" id="predCard" style="display:none;">
+                <div class="card-title">🔮 תחזית וביוץ</div>
+                <div id="prediction" class="grid"></div>
+            </div>
+
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+                    <button id="nextMonth" style="border:0; background:0; font-size:18px; cursor:pointer;">▶️</button>
+                    <strong id="monthTitle" style="color: #2c1f2f;"></strong>
+                    <button id="prevMonth" style="border:0; background:0; font-size:18px; cursor:pointer;">◀️</button>
+                </div>
+                <div id="calendar" class="calendar"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">⚙️ הגדרות</div>
+                <button onclick="toggleAppMode()" class="btn btn-secondary" style="margin-top:0;">🔄 החלפת מצב</button>
+                <button onclick="exportData()" class="btn btn-secondary" style="margin-top:10px;">📊 הורדת דוח</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title" onclick="toggleHistory()" style="cursor:pointer;">
+                    <span>📖 היסטוריה</span>
+                    <span id="historyArrow" class="toggle-arrow">▼</span>
+                </div>
+                <div id="historyContent">
+                    <div id="list"></div>
+                </div>
             </div>
         </div>
     </div>
 
     <footer>
         <p>© כל הזכויות שמורות לאור שקפאתי</p>
-        <p>גרסת עדכון: 1.7.3v</p>
+        <p>Perioday v2.0</p>
     </footer>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, getDocs, deleteDoc, doc, setDoc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <script>
+        // Simple Authentication System
+        const AUTH_KEY = 'perioday_auth';
+        const USERS_KEY = 'perioday_users';
+        const ENTRIES_KEY = 'perioday_entries_';
+        const USER_SETTINGS_KEY = 'perioday_settings_';
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyC3GgMwsc-30RoK7bKiCdaw8P6kZz-hLfg",
-            authDomain: "perioday1.firebaseapp.com",
-            projectId: "perioday1",
-            storageBucket: "perioday1.firebasestorage.app",
-            messagingSenderId: "926275939384",
-            appId: "1:926275939384:web:7a40c16c0254bbc6038acd"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
         let currentUser = null;
         let userMode = 'regular';
         let viewDate = new Date();
         let globalData = [];
+
+        // Initialize
+        function initApp() {
+            const stored = localStorage.getItem(AUTH_KEY);
+            if (stored) {
+                currentUser = JSON.parse(stored);
+                const settings = JSON.parse(localStorage.getItem(USER_SETTINGS_KEY + currentUser.username) || '{}');
+                userMode = settings.mode || 'regular';
+                showApp(currentUser.name);
+            } else {
+                showLoginScreen();
+            }
+        }
+
+        // Auth Functions
+        function switchToLogin() {
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+
+        function switchToRegister() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('registerScreen').classList.remove('hidden');
+        }
+
+        window.switchToLogin = switchToLogin;
+        window.switchToRegister = switchToRegister;
+
+        document.getElementById('loginForm').addEventListener('submit', handleLogin);
+        document.getElementById('registerForm').addEventListener('submit', handleRegister);
+        document.getElementById('setupForm').addEventListener('submit', handleSetup);
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorEl = document.getElementById('loginError');
+
+            const users = JSON.parse(localStorage.getItem(USERS_KEY) || '{}');
+            const user = users[username];
+
+            if (!user || user.password !== btoa(password)) {
+                errorEl.textContent = 'שם משתמש או סיסמה שגויים';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            currentUser = { username, name: user.name };
+            localStorage.setItem(AUTH_KEY, JSON.stringify(currentUser));
+            const settings = JSON.parse(localStorage.getItem(USER_SETTINGS_KEY + username) || '{}');
+            if (!settings.mode) {
+                showSetupScreen();
+            } else {
+                userMode = settings.mode;
+                showApp(user.name);
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('registerName').value;
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+            const errorEl = document.getElementById('registerError');
+
+            if (password !== passwordConfirm) {
+                errorEl.textContent = 'הסיסמאות אינן תואמות';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem(USERS_KEY) || '{}');
+            if (users[username]) {
+                errorEl.textContent = 'שם משתמש זה כבר בשימוש';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            users[username] = { name, password: btoa(password) };
+            localStorage.setItem(USERS_KEY, JSON.stringify(users));
+
+            currentUser = { username, name };
+            localStorage.setItem(AUTH_KEY, JSON.stringify(currentUser));
+            showSetupScreen();
+        }
+
+        function handleSetup(e) {
+            e.preventDefault();
+            userMode = document.getElementById('initialMode').value;
+            const settings = { mode: userMode };
+            localStorage.setItem(USER_SETTINGS_KEY + currentUser.username, JSON.stringify(settings));
+            showApp(currentUser.name);
+        }
+
+        function showLoginScreen() {
+            hideAllScreens();
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+
+        function showSetupScreen() {
+            hideAllScreens();
+            document.getElementById('setupScreen').classList.remove('hidden');
+        }
+
+        function hideAllScreens() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+        }
+
+        function getGreeting() {
+            const hour = new Date().getHours();
+            if (hour >= 5 && hour < 12) return "בוקר טוב";
+            if (hour >= 12 && hour < 17) return "צהריים טובים";
+            if (hour >= 17 && hour < 21) return "ערב טוב";
+            return "לילה טוב";
+        }
+
+        function showApp(name) {
+            hideAllScreens();
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('greeting').textContent = `${getGreeting()}, ${name} 🌸`;
+            document.getElementById('modeDisplay').textContent = `מצב: ${userMode === 'regular' ? 'מעקב רגיל' : 'תכנון היריון'}`;
+            loadData();
+        }
+
+        // Data Management
+        function loadData() {
+            if (!currentUser) return;
+            const entries = JSON.parse(localStorage.getItem(ENTRIES_KEY + currentUser.username) || '[]');
+            globalData = entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+            render(globalData);
+        }
+
+        function render(data) {
+            let nextPeriod = null;
+            let ovulationDate = null;
+
+            if (data.length >= 2) {
+                document.getElementById("predCard").style.display = "block";
+                let gaps = [];
+                for (let i = 0; i < data.length - 1; i++) {
+                    let diff = Math.round((new Date(data[i].date) - new Date(data[i+1].date)) / 86400000);
+                    if (diff > 20 && diff < 45) gaps.push(diff);
+                }
+                const avgCycle = gaps.length ? Math.round(gaps.reduce((a,b)=>a+b)/gaps.length) : 28;
+                nextPeriod = new Date(data[0].date);
+                nextPeriod.setDate(nextPeriod.getDate() + avgCycle);
+                ovulationDate = new Date(nextPeriod);
+                ovulationDate.setDate(ovulationDate.getDate() - 14);
+
+                document.getElementById("prediction").innerHTML = `
+                    <div class="stat-box">
+                        <div class="stat-label">מחזור הבא</div>
+                        <div class="stat-value">${nextPeriod.toLocaleDateString('he-IL')}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">ביוץ משוער</div>
+                        <div class="stat-value">${ovulationDate.toLocaleDateString('he-IL')}</div>
+                    </div>
+                `;
+            } else {
+                document.getElementById("predCard").style.display = "none";
+            }
+
+            renderCalendar(data, nextPeriod, ovulationDate);
+            renderHistory(data);
+        }
+
+        function renderCalendar(data, nextPeriod, ovulationDate) {
+            const cal = document.getElementById("calendar");
+            cal.innerHTML = "";
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth();
+            document.getElementById("monthTitle").innerText = viewDate.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) cal.innerHTML += `<div></div>`;
+            for (let d = 1; d <= daysInMonth; d++) {
+                const curr = new Date(year, month, d);
+                let cls = (new Date().toDateString() === curr.toDateString()) ? "calendar-day today" : "calendar-day";
+                data.forEach(e => {
+                    const start = new Date(e.date);
+                    const end = new Date(start);
+                    end.setDate(end.getDate() + e.duration - 1);
+                    if (curr >= start && curr <= end) cls += " period";
+                });
+                if (ovulationDate && curr.toDateString() === ovulationDate.toDateString()) cls += " ovulation";
+                cal.innerHTML += `<div class="${cls}">${d}</div>`;
+            }
+        }
+
+        function renderHistory(data) {
+            const list = document.getElementById("list");
+            list.innerHTML = "";
+            if (data.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #8b6a8f; padding: 20px;">אין רשומות עדיין</p>';
+                return;
+            }
+            data.forEach((e, idx) => {
+                const div = document.createElement('div');
+                div.className = 'entry';
+                div.innerHTML = `
+                    <button class="btn-delete" onclick="deleteEntry(${idx})">🗑️</button>
+                    <div class="entry-content">
+                        <div class="entry-date">${new Date(e.date).toLocaleDateString('he-IL')}</div>
+                        <div class="entry-info">נמשך ${e.duration} ימים${e.notes ? ' • ' + e.notes : ''}</div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        window.deleteEntry = function(index) {
+            if (!confirm("למחוק רשומה זו?")) return;
+            globalData.splice(index, 1);
+            localStorage.setItem(ENTRIES_KEY + currentUser.username, JSON.stringify(globalData));
+            loadData();
+        };
+
+        // Event Listeners
+        document.getElementById('saveBtn').onclick = () => {
+            const date = document.getElementById("date").value;
+            const duration = parseInt(document.getElementById("duration").value);
+            const notes = document.getElementById("notes").value;
+
+            if (!date) {
+                alert("אנא בחרי תאריך");
+                return;
+            }
+
+            const entry = { date, duration, notes, timestamp: new Date().toISOString() };
+            globalData.unshift(entry);
+            localStorage.setItem(ENTRIES_KEY + currentUser.username, JSON.stringify(globalData));
+            loadData();
+
+            document.getElementById("date").value = "";
+            document.getElementById("notes").value = "";
+            document.getElementById("duration").value = "5";
+        };
+
+        document.getElementById("logoutBtn").onclick = () => {
+            if (confirm("האם אתה בטוח שברצונך להתנתק?")) {
+                localStorage.removeItem(AUTH_KEY);
+                currentUser = null;
+                location.reload();
+            }
+        };
+
+        document.getElementById("prevMonth").onclick = () => {
+            viewDate.setMonth(viewDate.getMonth() - 1);
+            loadData();
+        };
+
+        document.getElementById("nextMonth").onclick = () => {
+            viewDate.setMonth(viewDate.getMonth() + 1);
+            loadData();
+        };
 
         window.toggleHistory = () => {
             const content = document.getElementById('historyContent');
@@ -177,139 +853,30 @@
             }
         };
 
-        function getGreeting() {
-            const hour = new Date().getHours();
-            if (hour < 12 && hour > 4) return "בוקר טוב";
-            if (hour < 17) return "צהריים טובים";
-            if (hour < 21) return "ערב טוב";
-            return "לילה טוב";
-        }
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                const userSnap = await getDoc(doc(db, "users_metadata", user.uid));
-                if (userSnap.exists()) {
-                    userMode = userSnap.data().mode || 'regular';
-                    showApp(userSnap.data().name);
-                } else {
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('setupScreen').style.display = 'flex';
-                }
-            } else {
-                document.getElementById('loginScreen').style.display = 'flex';
-                document.getElementById('mainApp').style.display = 'none';
-            }
-        });
-
-        document.getElementById('saveNameBtn').onclick = async () => {
-            const name = document.getElementById('customName').value;
-            const mode = document.getElementById('initialMode').value;
-            if (!name) return alert("אנא הכניסי שם");
-            userMode = mode;
-            await setDoc(doc(db, "users_metadata", currentUser.uid), { name, mode });
-            showApp(name);
-        };
-
-        window.toggleAppMode = async () => {
+        window.toggleAppMode = () => {
             userMode = userMode === 'regular' ? 'conception' : 'regular';
-            await updateDoc(doc(db, "users_metadata", currentUser.uid), { mode: userMode });
-            location.reload();
+            const settings = { mode: userMode };
+            localStorage.setItem(USER_SETTINGS_KEY + currentUser.username, JSON.stringify(settings));
+            document.getElementById('modeDisplay').textContent = `מצב: ${userMode === 'regular' ? 'מעקב רגיל' : 'תכנון היריון'}`;
         };
-
-        function showApp(name) {
-            document.getElementById('setupScreen').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'block';
-            document.getElementById('greeting').innerText = `${getGreeting()}, ${name} 🌸`;
-            document.getElementById('modeDisplay').innerText = `מצב: ${userMode === 'regular' ? 'מעקב רגיל' : 'תכנון היריון'}`;
-            loadData();
-        }
-
-        document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
-        document.getElementById('logoutBtn').onclick = () => signOut(auth);
-
-        document.getElementById('saveBtn').onclick = async () => {
-            const date = document.getElementById("date").value;
-            const duration = parseInt(document.getElementById("duration").value);
-            if (!date || !currentUser) return;
-            await addDoc(collection(db, "users", currentUser.uid, "entries"), {
-                date, duration, notes: document.getElementById("notes").value, timestamp: serverTimestamp()
-            });
-            loadData();
-            alert("נשמר! ✨");
-        };
-
-        async function loadData() {
-            if (!currentUser) return;
-            const q = query(collection(db, "users", currentUser.uid, "entries"), orderBy("date", "desc"));
-            const querySnapshot = await getDocs(q);
-            globalData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            render(globalData);
-        }
-
-        function render(data) {
-            let nextPeriod = null; let ovulationDate = null;
-            if (data.length >= 2) {
-                document.getElementById("predCard").style.display = "block";
-                let gaps = [];
-                for (let i = 0; i < data.length - 1; i++) {
-                    let diff = Math.round((new Date(data[i].date) - new Date(data[i+1].date)) / 86400000);
-                    if (diff > 20 && diff < 45) gaps.push(diff);
-                }
-                const avgCycle = gaps.length ? Math.round(gaps.reduce((a,b)=>a+b)/gaps.length) : 28;
-                nextPeriod = new Date(data[0].date);
-                nextPeriod.setDate(nextPeriod.getDate() + avgCycle);
-                ovulationDate = new Date(nextPeriod); ovulationDate.setDate(ovulationDate.getDate() - 14);
-
-                document.getElementById("prediction").innerHTML = `
-                    <div class="box"><strong>מחזור הבא</strong><span>${nextPeriod.toLocaleDateString('he-IL')}</span></div>
-                    <div class="box"><strong>ביוץ משוער</strong><span>${ovulationDate.toLocaleDateString('he-IL')}</span></div>
-                `;
-            } else { document.getElementById("predCard").style.display = "none"; }
-
-            renderCalendar(data, nextPeriod, ovulationDate);
-            const list = document.getElementById("list");
-            list.innerHTML = "";
-            data.forEach(e => {
-                const div = document.createElement('div');
-                div.className = 'entry';
-                div.innerHTML = `<button class="delete-btn">🗑️</button><strong>${new Date(e.date).toLocaleDateString('he-IL')}</strong><br><small>נמשך ${e.duration} ימים. ${e.notes || ''}</small>`;
-                div.querySelector('.delete-btn').onclick = async () => { if(confirm("למחוק?")) { await deleteDoc(doc(db, "users", currentUser.uid, "entries", e.id)); loadData(); } };
-                list.appendChild(div);
-            });
-        }
-
-        function renderCalendar(data, nextPeriod, ovulationDate) {
-            const cal = document.getElementById("calendar"); cal.innerHTML = "";
-            const year = viewDate.getFullYear(); const month = viewDate.getMonth();
-            document.getElementById("monthTitle").innerText = viewDate.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-            for (let i = 0; i < firstDay; i++) cal.innerHTML += `<div></div>`;
-            for (let d = 1; d <= daysInMonth; d++) {
-                const curr = new Date(year, month, d);
-                let cls = (new Date().toDateString() === curr.toDateString()) ? "today" : "";
-                data.forEach(e => {
-                    const start = new Date(e.date); const end = new Date(start); end.setDate(end.getDate() + e.duration - 1);
-                    if (curr >= start && curr <= end) cls += " period";
-                });
-                if (ovulationDate && curr.toDateString() === ovulationDate.toDateString()) cls += " ovulation";
-                cal.innerHTML += `<div class="day ${cls}">${d}</div>`;
-            }
-        }
 
         window.exportData = () => {
-            let text = "דוח מחזור אישי - Perioday\n\n";
-            globalData.forEach(e => { text += `תאריך: ${e.date} | משך: ${e.duration} ימים\n`; });
+            let text = "דוח מחזור אישי - Perioday\n";
+            text += "=" .repeat(40) + "\n\n";
+            globalData.forEach(e => {
+                text += `תאריך: ${e.date} | משך: ${e.duration} ימים\n`;
+                if (e.notes) text += `הערות: ${e.notes}\n`;
+                text += "\n";
+            });
             const blob = new Blob([text], { type: "text/plain" });
-            const anchor = document.createElement("a");
-            anchor.download = "period_report.txt"; anchor.href = window.URL.createObjectURL(blob); anchor.click();
+            const link = document.createElement("a");
+            link.download = `perioday_report_${new Date().toISOString().split('T')[0]}.txt`;
+            link.href = window.URL.createObjectURL(blob);
+            link.click();
         };
 
-        document.getElementById("prevMonth").onclick = () => { viewDate.setMonth(viewDate.getMonth() - 1); loadData(); };
-        document.getElementById("nextMonth").onclick = () => { viewDate.setMonth(viewDate.getMonth() + 1); loadData(); };
+        // Start App
+        initApp();
     </script>
 </body>
 </html>
