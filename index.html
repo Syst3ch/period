@@ -33,6 +33,10 @@
             min-height: 100vh;
         }
 
+        .auth-screen.hidden {
+            display: none;
+        }
+
         .logo-section {
             text-align: center;
             margin-bottom: 40px;
@@ -191,9 +195,12 @@
 
         /* Main App */
         .app {
-            display: none;
             padding: 20px;
             padding-bottom: 40px;
+        }
+
+        .app.hidden {
+            display: none;
         }
 
         .header {
@@ -396,7 +403,7 @@
         }
 
         /* Utilities */
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .error { color: #ff5fb8; font-size: 13px; margin-top: 4px; }
         .success { color: #4caf50; font-size: 13px; margin-top: 4px; }
 
@@ -581,6 +588,15 @@
 
         // Initialize
         function initApp() {
+            // Attach event listeners
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const setupForm = document.getElementById('setupForm');
+
+            if (loginForm) loginForm.addEventListener('submit', handleLogin);
+            if (registerForm) registerForm.addEventListener('submit', handleRegister);
+            if (setupForm) setupForm.addEventListener('submit', handleSetup);
+
             const stored = localStorage.getItem(AUTH_KEY);
             if (stored) {
                 currentUser = JSON.parse(stored);
@@ -605,10 +621,6 @@
 
         window.switchToLogin = switchToLogin;
         window.switchToRegister = switchToRegister;
-
-        document.getElementById('loginForm').addEventListener('submit', handleLogin);
-        document.getElementById('registerForm').addEventListener('submit', handleRegister);
-        document.getElementById('setupForm').addEventListener('submit', handleSetup);
 
         function handleLogin(e) {
             e.preventDefault();
@@ -674,19 +686,16 @@
         }
 
         function showLoginScreen() {
-            hideAllScreens();
             document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
         }
 
         function showSetupScreen() {
-            hideAllScreens();
-            document.getElementById('setupScreen').classList.remove('hidden');
-        }
-
-        function hideAllScreens() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('registerScreen').classList.add('hidden');
-            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('setupScreen').classList.remove('hidden');
             document.getElementById('mainApp').classList.add('hidden');
         }
 
@@ -699,7 +708,9 @@
         }
 
         function showApp(name) {
-            hideAllScreens();
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('setupScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             document.getElementById('greeting').textContent = `${getGreeting()}, ${name} 🌸`;
             document.getElementById('modeDisplay').textContent = `מצב: ${userMode === 'regular' ? 'מעקב רגיל' : 'תכנון היריון'}`;
@@ -876,7 +887,12 @@
         };
 
         // Start App
-        initApp();
+        window.addEventListener('DOMContentLoaded', initApp);
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
     </script>
 </body>
 </html>
