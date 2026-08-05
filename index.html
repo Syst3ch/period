@@ -575,7 +575,208 @@
     </footer>
 
     <script>
-        // Simple Authentication System
+        // Simple hash function (SHA-256 simulation for password hashing)
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Toast Notification System
+        const Toast = {
+            show(message, type = 'info', duration = 3000) {
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                toast.textContent = message;
+                toast.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    background: ${type === 'error' ? '#ff5fb8' : type === 'success' ? '#4caf50' : '#2196F3'};
+                    color: white;
+                    padding: 16px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                    z-index: 9999;
+                    font-weight: 500;
+                    animation: slideIn 0.3s ease-out;
+                `;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), duration);
+            }
+        };
+
+        // Add animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(400px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // App State Management
+        const AppState = {
+            currentUser: null,
+            userMode: 'regular',
+            viewDate: new Date(),
+            globalData: [],
+
+            init() {
+                this.loadUser();
+            },
+
+            loadUser() {
+                const stored = localStorage.getItem('perioday_auth');
+                if (stored) {
+                    try {
+                        this.currentUser = JSON.parse(stored);
+                        const settings = JSON.parse(localStorage.getItem('perioday_settings_' + this.currentUser.username) || '{}');
+                        this.userMode = settings.mode || 'regular';
+                    } catch (e) {
+                        console.error('Failed to load user:', e);
+                        this.clearAuth();
+                    }
+                }
+            },
+
+            setUser(user) {
+                this.currentUser = user;
+                if (user) {
+                    localStorage.setItem('perioday_auth', JSON.stringify(user));
+                }
+            },
+
+            clearAuth() {
+                this.currentUser = null;
+                localStorage.removeItem('perioday_auth');
+            },
+
+            getStorageUsage() {
+                let total = 0;
+                for (let key in localStorage) {
+                    if (localStorage.hasOwnProperty(key)) {
+                        total += localStorage[key].length + key.length;
+                    }
+                }
+                return {
+                    used: (total / 1024).toFixed(2),
+                    limit: 5120,
+                    percent: ((total / 1024 / 5120) * 100).toFixed(0)
+                };
+            }
+        };
+
+        // Validation Module
+        const Validator = {
+            email(email) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || 'פורמט אימייל לא תקין';
+            },
+
+            password(pwd) {
+                if (pwd.length < 6) return 'סיסמה חייבת להיות לפחות 6 תווים';
+                if (!/[A-Z]/.test(pwd)) return 'סיסמה חייבת להכיל אות גדולה';
+                if (!/[0-9]/.test(pwd)) return 'סיסמה חייבת להכיל מספר';
+                return null;
+            },
+
+            username(name) {
+                if (name.length < 3) return 'שם משתמש חייב להיות לפחות 3 תווים';
+                if (!/^[a-zA-Z0-9_]+$/.test(name)) return 'שם משתמש יכול להכיל אותיות, מספרים ו-_';
+                return null;
+            },
+
+            date(dateStr) {
+                if (!dateStr) return 'יש לבחור תאריך';
+                const d = new Date(dateStr);
+                if (d > new Date()) return 'תאריך לא יכול להיות בעתיד';
+                return null;
+            }
+        };
+
+        // Data Management
+        const DataManager = {
+            async saveEntry(entry) {
+                if (!AppState.currentUser) return false;
+
+                AppState.globalData.unshift({
+                    ...entry,
+                    id: Date.now(),
+                    timestamp: new Date().toISOString()
+                });
+
+                return this.persist();
+            },
+
+            loadEntries() {
+                if (!AppState.currentUser) return;
+
+                try {
+                    const stored = localStorage.getItem('perioday_entries_' + AppState.currentUser.username);
+                    AppState.globalData = stored ? JSON.parse(stored) : [];
+                    AppState.globalData.sort((a, b) => new Date(b.date) - new Date(a.date));
+                } catch (e) {
+                    console.error('Failed to load entries:', e);
+                    AppState.globalData = [];
+                }
+            },
+
+            deleteEntry(id) {
+                const idx = AppState.globalData.findIndex(e => e.id === id);
+                if (idx > -1) {
+                    AppState.globalData.splice(idx, 1);
+                    return this.persist();
+                }
+                return false;
+            },
+
+            persist() {
+                if (!AppState.currentUser) return false;
+
+                try {
+                    const usage = AppState.getStorageUsage();
+                    if (usage.percent > 95) {
+                        Toast.show('אחסון כמעט מלא (95%)', 'error');
+                        return false;
+                    }
+
+                    localStorage.setItem(
+                        'perioday_entries_' + AppState.currentUser.username,
+                        JSON.stringify(AppState.globalData)
+                    );
+                    return true;
+                } catch (e) {
+                    if (e.name === 'QuotaExceededError') {
+                        Toast.show('אחסון מלא - אנא הורד דוח ומחק נתונים ישנים', 'error');
+                    }
+                    return false;
+                }
+            },
+
+            exportData() {
+                let text = "דוח מחזור אישי - Perioday\n";
+                text += "=".repeat(40) + "\n\n";
+                text += `מייצא בתאריך: ${new Date().toLocaleDateString('he-IL')}\n\n`;
+
+                AppState.globalData.forEach(e => {
+                    text += `תאריך: ${e.date} | משך: ${e.duration} ימים\n`;
+                    if (e.notes) text += `הערות: ${e.notes}\n`;
+                    text += "\n";
+                });
+
+                const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+                const link = document.createElement("a");
+                link.download = `perioday_${new Date().toISOString().split('T')[0]}.txt`;
+                link.href = URL.createObjectURL(blob);
+                link.click();
+                URL.revokeObjectURL(link.href);
+            }
+        };
+
+        // Constants
         const AUTH_KEY = 'perioday_auth';
         const USERS_KEY = 'perioday_users';
         const ENTRIES_KEY = 'perioday_entries_';
@@ -588,6 +789,8 @@
 
         // Initialize
         function initApp() {
+            AppState.init();
+
             // Attach event listeners
             const loginForm = document.getElementById('loginForm');
             const registerForm = document.getElementById('registerForm');
@@ -597,12 +800,9 @@
             if (registerForm) registerForm.addEventListener('submit', handleRegister);
             if (setupForm) setupForm.addEventListener('submit', handleSetup);
 
-            const stored = localStorage.getItem(AUTH_KEY);
-            if (stored) {
-                currentUser = JSON.parse(stored);
-                const settings = JSON.parse(localStorage.getItem(USER_SETTINGS_KEY + currentUser.username) || '{}');
-                userMode = settings.mode || 'regular';
-                showApp(currentUser.name);
+            if (AppState.currentUser) {
+                DataManager.loadEntries();
+                showApp(AppState.currentUser.name);
             } else {
                 showLoginScreen();
             }
@@ -622,39 +822,84 @@
         window.switchToLogin = switchToLogin;
         window.switchToRegister = switchToRegister;
 
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
-            const username = document.getElementById('loginUsername').value;
+            const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
             const errorEl = document.getElementById('loginError');
+            errorEl.classList.add('hidden');
 
-            const users = JSON.parse(localStorage.getItem(USERS_KEY) || '{}');
-            const user = users[username];
-
-            if (!user || user.password !== btoa(password)) {
-                errorEl.textContent = 'שם משתמש או סיסמה שגויים';
+            if (!username || !password) {
+                errorEl.textContent = 'אנא מלא את כל השדות';
                 errorEl.classList.remove('hidden');
                 return;
             }
 
-            currentUser = { username, name: user.name };
-            localStorage.setItem(AUTH_KEY, JSON.stringify(currentUser));
-            const settings = JSON.parse(localStorage.getItem(USER_SETTINGS_KEY + username) || '{}');
-            if (!settings.mode) {
-                showSetupScreen();
-            } else {
-                userMode = settings.mode;
-                showApp(user.name);
+            try {
+                const users = JSON.parse(localStorage.getItem(USERS_KEY) || '{}');
+                const user = users[username];
+
+                if (!user) {
+                    errorEl.textContent = 'שם משתמש או סיסמה שגויים';
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+
+                const passwordHash = await hashPassword(password);
+                if (user.password !== passwordHash) {
+                    errorEl.textContent = 'שם משתמש או סיסמה שגויים';
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+
+                AppState.setUser({ username, name: user.name });
+                const settings = JSON.parse(localStorage.getItem(USER_SETTINGS_KEY + username) || '{}');
+                AppState.userMode = settings.mode || 'regular';
+
+                Toast.show(`ברוכה הבאה, ${user.name}! 🌸`, 'success');
+
+                if (!settings.mode) {
+                    showSetupScreen();
+                } else {
+                    DataManager.loadEntries();
+                    showApp(user.name);
+                }
+            } catch (err) {
+                console.error('Login error:', err);
+                errorEl.textContent = 'שגיאה בהתחברות. אנא נסי שוב';
+                errorEl.classList.remove('hidden');
             }
         }
 
-        function handleRegister(e) {
+        async function handleRegister(e) {
             e.preventDefault();
-            const name = document.getElementById('registerName').value;
-            const username = document.getElementById('registerUsername').value;
+            const name = document.getElementById('registerName').value.trim();
+            const username = document.getElementById('registerUsername').value.trim();
             const password = document.getElementById('registerPassword').value;
             const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
             const errorEl = document.getElementById('registerError');
+            errorEl.classList.add('hidden');
+
+            // Validation
+            if (!name || !username || !password || !passwordConfirm) {
+                errorEl.textContent = 'אנא מלא את כל השדות';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            const usernameError = Validator.username(username);
+            if (usernameError) {
+                errorEl.textContent = usernameError;
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            const passwordError = Validator.password(password);
+            if (passwordError) {
+                errorEl.textContent = passwordError;
+                errorEl.classList.remove('hidden');
+                return;
+            }
 
             if (password !== passwordConfirm) {
                 errorEl.textContent = 'הסיסמאות אינן תואמות';
@@ -662,27 +907,34 @@
                 return;
             }
 
-            const users = JSON.parse(localStorage.getItem(USERS_KEY) || '{}');
-            if (users[username]) {
-                errorEl.textContent = 'שם משתמש זה כבר בשימוש';
+            try {
+                const users = JSON.parse(localStorage.getItem(USERS_KEY) || '{}');
+                if (users[username]) {
+                    errorEl.textContent = 'שם משתמש זה כבר בשימוש';
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+
+                const passwordHash = await hashPassword(password);
+                users[username] = { name, password: passwordHash };
+                localStorage.setItem(USERS_KEY, JSON.stringify(users));
+
+                AppState.setUser({ username, name });
+                Toast.show('חשבון נוצר בהצלחה! 🎉', 'success');
+                showSetupScreen();
+            } catch (err) {
+                console.error('Registration error:', err);
+                errorEl.textContent = 'שגיאה בהרשמה. אנא נסי שוב';
                 errorEl.classList.remove('hidden');
-                return;
             }
-
-            users[username] = { name, password: btoa(password) };
-            localStorage.setItem(USERS_KEY, JSON.stringify(users));
-
-            currentUser = { username, name };
-            localStorage.setItem(AUTH_KEY, JSON.stringify(currentUser));
-            showSetupScreen();
         }
 
         function handleSetup(e) {
             e.preventDefault();
-            userMode = document.getElementById('initialMode').value;
-            const settings = { mode: userMode };
-            localStorage.setItem(USER_SETTINGS_KEY + currentUser.username, JSON.stringify(settings));
-            showApp(currentUser.name);
+            AppState.userMode = document.getElementById('initialMode').value;
+            const settings = { mode: AppState.userMode };
+            localStorage.setItem(USER_SETTINGS_KEY + AppState.currentUser.username, JSON.stringify(settings));
+            showApp(AppState.currentUser.name);
         }
 
         function showLoginScreen() {
@@ -713,16 +965,14 @@
             document.getElementById('setupScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             document.getElementById('greeting').textContent = `${getGreeting()}, ${name} 🌸`;
-            document.getElementById('modeDisplay').textContent = `מצב: ${userMode === 'regular' ? 'מעקב רגיל' : 'תכנון היריון'}`;
+            document.getElementById('modeDisplay').textContent = `מצב: ${AppState.userMode === 'regular' ? 'מעקב רגיל' : 'תכנון היריון'}`;
             loadData();
         }
 
         // Data Management
         function loadData() {
-            if (!currentUser) return;
-            const entries = JSON.parse(localStorage.getItem(ENTRIES_KEY + currentUser.username) || '[]');
-            globalData = entries.sort((a, b) => new Date(b.date) - new Date(a.date));
-            render(globalData);
+            DataManager.loadEntries();
+            render(AppState.globalData);
         }
 
         function render(data) {
@@ -762,27 +1012,36 @@
 
         function renderCalendar(data, nextPeriod, ovulationDate) {
             const cal = document.getElementById("calendar");
-            cal.innerHTML = "";
-            const year = viewDate.getFullYear();
-            const month = viewDate.getMonth();
-            document.getElementById("monthTitle").innerText = viewDate.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+            const year = AppState.viewDate.getFullYear();
+            const month = AppState.viewDate.getMonth();
+            document.getElementById("monthTitle").innerText = AppState.viewDate.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
 
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            for (let i = 0; i < firstDay; i++) cal.innerHTML += `<div></div>`;
+            // Build HTML efficiently
+            let html = '';
+            for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+
             for (let d = 1; d <= daysInMonth; d++) {
                 const curr = new Date(year, month, d);
                 let cls = (new Date().toDateString() === curr.toDateString()) ? "calendar-day today" : "calendar-day";
-                data.forEach(e => {
+
+                for (const e of data) {
                     const start = new Date(e.date);
                     const end = new Date(start);
                     end.setDate(end.getDate() + e.duration - 1);
-                    if (curr >= start && curr <= end) cls += " period";
-                });
+                    if (curr >= start && curr <= end) {
+                        cls += " period";
+                        break;
+                    }
+                }
+
                 if (ovulationDate && curr.toDateString() === ovulationDate.toDateString()) cls += " ovulation";
-                cal.innerHTML += `<div class="${cls}">${d}</div>`;
+                html += `<div class="${cls}">${d}</div>`;
             }
+
+            cal.innerHTML = html;
         }
 
         function renderHistory(data) {
@@ -792,63 +1051,83 @@
                 list.innerHTML = '<p style="text-align: center; color: #8b6a8f; padding: 20px;">אין רשומות עדיין</p>';
                 return;
             }
-            data.forEach((e, idx) => {
+            data.forEach((e) => {
                 const div = document.createElement('div');
                 div.className = 'entry';
-                div.innerHTML = `
-                    <button class="btn-delete" onclick="deleteEntry(${idx})">🗑️</button>
-                    <div class="entry-content">
-                        <div class="entry-date">${new Date(e.date).toLocaleDateString('he-IL')}</div>
-                        <div class="entry-info">נמשך ${e.duration} ימים${e.notes ? ' • ' + e.notes : ''}</div>
-                    </div>
-                `;
+
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'entry-date';
+                dateDiv.textContent = new Date(e.date).toLocaleDateString('he-IL');
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'entry-info';
+                infoDiv.textContent = `נמשך ${e.duration} ימים${e.notes ? ' • ' + e.notes : ''}`;
+
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'entry-content';
+                contentDiv.appendChild(dateDiv);
+                contentDiv.appendChild(infoDiv);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn-delete';
+                deleteBtn.textContent = '🗑️';
+                deleteBtn.addEventListener('click', () => deleteEntryById(e.id));
+
+                div.appendChild(deleteBtn);
+                div.appendChild(contentDiv);
                 list.appendChild(div);
             });
         }
 
-        window.deleteEntry = function(index) {
+        function deleteEntryById(id) {
             if (!confirm("למחוק רשומה זו?")) return;
-            globalData.splice(index, 1);
-            localStorage.setItem(ENTRIES_KEY + currentUser.username, JSON.stringify(globalData));
-            loadData();
-        };
+            if (DataManager.deleteEntry(id)) {
+                loadData();
+                Toast.show('רשומה נמחקה בהצלחה', 'success');
+            } else {
+                Toast.show('שגיאה במחיקה', 'error');
+            }
+        }
 
         // Event Listeners
-        document.getElementById('saveBtn').onclick = () => {
+        document.getElementById('saveBtn').onclick = async () => {
             const date = document.getElementById("date").value;
             const duration = parseInt(document.getElementById("duration").value);
-            const notes = document.getElementById("notes").value;
+            const notes = document.getElementById("notes").value.trim();
 
-            if (!date) {
-                alert("אנא בחרי תאריך");
+            const dateError = Validator.date(date);
+            if (dateError) {
+                Toast.show(dateError, 'error');
                 return;
             }
 
-            const entry = { date, duration, notes, timestamp: new Date().toISOString() };
-            globalData.unshift(entry);
-            localStorage.setItem(ENTRIES_KEY + currentUser.username, JSON.stringify(globalData));
-            loadData();
+            if (await DataManager.saveEntry({ date, duration, notes })) {
+                loadData();
+                Toast.show('רשומה נשמרה בהצלחה ✨', 'success');
 
-            document.getElementById("date").value = "";
-            document.getElementById("notes").value = "";
-            document.getElementById("duration").value = "5";
+                document.getElementById("date").value = "";
+                document.getElementById("notes").value = "";
+                document.getElementById("duration").value = "5";
+            } else {
+                Toast.show('שגיאה בשמירה', 'error');
+            }
         };
 
         document.getElementById("logoutBtn").onclick = () => {
             if (confirm("האם אתה בטוח שברצונך להתנתק?")) {
-                localStorage.removeItem(AUTH_KEY);
-                currentUser = null;
-                location.reload();
+                AppState.clearAuth();
+                Toast.show('התנתקת בהצלחה', 'success');
+                setTimeout(() => location.reload(), 500);
             }
         };
 
         document.getElementById("prevMonth").onclick = () => {
-            viewDate.setMonth(viewDate.getMonth() - 1);
+            AppState.viewDate.setMonth(AppState.viewDate.getMonth() - 1);
             loadData();
         };
 
         document.getElementById("nextMonth").onclick = () => {
-            viewDate.setMonth(viewDate.getMonth() + 1);
+            AppState.viewDate.setMonth(AppState.viewDate.getMonth() + 1);
             loadData();
         };
 
@@ -865,25 +1144,20 @@
         };
 
         window.toggleAppMode = () => {
-            userMode = userMode === 'regular' ? 'conception' : 'regular';
-            const settings = { mode: userMode };
-            localStorage.setItem(USER_SETTINGS_KEY + currentUser.username, JSON.stringify(settings));
-            document.getElementById('modeDisplay').textContent = `מצב: ${userMode === 'regular' ? 'מעקב רגיל' : 'תכנון היריון'}`;
+            AppState.userMode = AppState.userMode === 'regular' ? 'conception' : 'regular';
+            const settings = { mode: AppState.userMode };
+            localStorage.setItem(USER_SETTINGS_KEY + AppState.currentUser.username, JSON.stringify(settings));
+            document.getElementById('modeDisplay').textContent = `מצב: ${AppState.userMode === 'regular' ? 'מעקב רגיל' : 'תכנון היריון'}`;
+            Toast.show(`מצב שונה ל-${AppState.userMode === 'regular' ? 'מעקב רגיל' : 'תכנון היריון'}`, 'success');
         };
 
         window.exportData = () => {
-            let text = "דוח מחזור אישי - Perioday\n";
-            text += "=" .repeat(40) + "\n\n";
-            globalData.forEach(e => {
-                text += `תאריך: ${e.date} | משך: ${e.duration} ימים\n`;
-                if (e.notes) text += `הערות: ${e.notes}\n`;
-                text += "\n";
-            });
-            const blob = new Blob([text], { type: "text/plain" });
-            const link = document.createElement("a");
-            link.download = `perioday_report_${new Date().toISOString().split('T')[0]}.txt`;
-            link.href = window.URL.createObjectURL(blob);
-            link.click();
+            if (AppState.globalData.length === 0) {
+                Toast.show('אין נתונים לייצוא', 'error');
+                return;
+            }
+            DataManager.exportData();
+            Toast.show('דוח הורד בהצלחה 📊', 'success');
         };
 
         // Start App
