@@ -16,17 +16,39 @@
             --primary-light: #ff8ad6;
             --bg-main: linear-gradient(135deg, #f8f4ff 0%, #ffe8f0 100%);
             --bg-card: white;
+            --bg-card-subtle: linear-gradient(135deg, #fff5fa, #f0e6f0);
+            --bg-card-entry: linear-gradient(135deg, #fff5fa, #f8f4ff);
+            --bg-calendar-day: #f8f4ff;
             --text-main: #2c1f2f;
             --text-sub: #8b6a8f;
+            --text-footer: #a37b8e;
             --border: #e8d5e8;
+            --color-fertile: #ffc84d;
+            --color-fertile-text: #8b4513;
+            --color-ovulation: #c084ff;
+            --color-next-period: #ffb3d9;
+            --color-next-period-text: #8b3a62;
+            --success: #4caf50;
+            --info: #2196F3;
         }
 
         :root[data-theme="dark"] {
             --bg-main: linear-gradient(135deg, #1a1a2e 0%, #2d1b3d 100%);
             --bg-card: #2d2d3d;
+            --bg-card-subtle: linear-gradient(135deg, #3d3d4d, #4d4d5d);
+            --bg-card-entry: linear-gradient(135deg, #3d3d4d, #4d4d5d);
+            --bg-calendar-day: #3d3d4d;
             --text-main: #f0e6f0;
             --text-sub: #b8a8b8;
+            --text-footer: #8b7b8b;
             --border: #3d3d4d;
+            --color-fertile: #8b8b00;
+            --color-fertile-text: #ffff99;
+            --color-ovulation: #9966ff;
+            --color-next-period: #cc6699;
+            --color-next-period-text: #ffccdd;
+            --success: #66bb6a;
+            --info: #42a5f5;
         }
 
         body {
@@ -86,7 +108,7 @@
 
         .logo-subtitle {
             font-size: 14px;
-            color: #8b6a8f;
+            color: var(--text-sub);
             font-weight: 500;
         }
 
@@ -100,7 +122,7 @@
             display: block;
             font-size: 14px;
             font-weight: 600;
-            color: #2c1f2f;
+            color: var(--text-main);
             margin-bottom: 8px;
         }
 
@@ -108,27 +130,29 @@
         input[type="password"],
         input[type="email"],
         input[type="date"],
+        input[type="number"],
         select,
         textarea {
             width: 100%;
             padding: 14px 16px;
-            border: 2px solid #e8d5e8;
+            border: 2px solid var(--border);
             border-radius: 14px;
             font-size: 16px;
             font-family: inherit;
             outline: none;
             transition: 0.2s;
-            background: white;
-            color: #2c1f2f;
+            background: var(--bg-card);
+            color: var(--text-main);
         }
 
         input[type="text"]:focus,
         input[type="password"]:focus,
         input[type="email"]:focus,
         input[type="date"]:focus,
+        input[type="number"]:focus,
         select:focus,
         textarea:focus {
-            border-color: #ff5fb8;
+            border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(255, 95, 184, 0.1);
         }
 
@@ -160,14 +184,14 @@
         }
 
         .btn-secondary {
-            background: white;
-            color: #ff5fb8;
-            border: 2px solid #ff5fb8;
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
             margin-top: 8px;
         }
 
         .btn-secondary:hover {
-            background: #fff5fa;
+            background: rgba(255, 95, 184, 0.1);
         }
 
         .btn-small {
@@ -179,7 +203,7 @@
         .btn-text {
             background: none;
             border: none;
-            color: #ff5fb8;
+            color: var(--primary);
             cursor: pointer;
             font-weight: 600;
             font-size: 14px;
@@ -199,11 +223,11 @@
         .form-footer {
             margin-top: 20px;
             font-size: 14px;
-            color: #8b6a8f;
+            color: var(--text-sub);
         }
 
         .form-footer a {
-            color: #ff5fb8;
+            color: var(--primary);
             text-decoration: none;
             font-weight: 600;
         }
@@ -233,12 +257,12 @@
         .greeting {
             font-size: 24px;
             font-weight: 700;
-            color: #2c1f2f;
+            color: var(--text-main);
         }
 
         .greeting-sub {
             font-size: 12px;
-            color: #8b6a8f;
+            color: var(--text-sub);
             margin-top: 4px;
         }
 
@@ -248,9 +272,9 @@
         }
 
         .btn-logout {
-            background: white;
-            border: 2px solid #e8d5e8;
-            color: #8b6a8f;
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text-sub);
             padding: 8px 14px;
             border-radius: 10px;
             font-size: 12px;
@@ -260,8 +284,8 @@
         }
 
         .btn-logout:hover {
-            border-color: #ff5fb8;
-            color: #ff5fb8;
+            border-color: var(--primary);
+            color: var(--primary);
         }
 
         /* Card */
@@ -281,7 +305,7 @@
         .card-title {
             font-size: 17px;
             font-weight: 700;
-            color: #2c1f2f;
+            color: var(--text-main);
             margin-bottom: 16px;
             display: flex;
             justify-content: space-between;
@@ -303,8 +327,8 @@
         }
 
         .stat-box {
-            background: linear-gradient(135deg, #fff5fa, #f0e6f0);
-            border: 1px solid #e8d5e8;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border);
             border-radius: 14px;
             padding: 14px;
             text-align: center;
@@ -313,14 +337,14 @@
         .stat-label {
             font-size: 12px;
             font-weight: 600;
-            color: #8b6a8f;
+            color: var(--text-sub);
             margin-bottom: 6px;
         }
 
         .stat-value {
             font-size: 16px;
             font-weight: 700;
-            color: #ff5fb8;
+            color: var(--primary);
         }
 
         /* Calendar */
@@ -334,53 +358,53 @@
         .calendar-day {
             aspect-ratio: 1;
             border-radius: 10px;
-            background: #f8f4ff;
+            background: var(--bg-calendar-day);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 13px;
             font-weight: 500;
-            color: #2c1f2f;
+            color: var(--text-main);
         }
 
         .calendar-day.period {
-            background: #ff5fb8;
+            background: var(--primary);
             color: white;
             font-weight: 700;
         }
 
         .calendar-day.fertile {
-            background: #ffc84d;
-            color: #8b4513;
+            background: var(--color-fertile);
+            color: var(--color-fertile-text);
             font-weight: 600;
         }
 
         .calendar-day.ovulation {
-            background: #c084ff;
+            background: var(--color-ovulation);
             color: white;
             font-weight: 700;
-            box-shadow: inset 0 0 0 2px #ff5fb8;
+            box-shadow: inset 0 0 0 2px var(--primary);
         }
 
         .calendar-day.next-period {
-            background: #ffb3d9;
-            color: #8b3a62;
+            background: var(--color-next-period);
+            color: var(--color-next-period-text);
             font-weight: 600;
         }
 
         .calendar-day.today {
-            border: 2px solid #ff5fb8;
+            border: 2px solid var(--primary);
         }
 
         .calendar-day.today.period {
             border: 3px solid white;
-            box-shadow: 0 0 0 2px #ff5fb8;
+            box-shadow: 0 0 0 2px var(--primary);
         }
 
         /* Entry */
         .entry {
-            background: linear-gradient(135deg, #fff5fa, #f8f4ff);
-            border-right: 4px solid #ff5fb8;
+            background: var(--bg-card-entry);
+            border-right: 4px solid var(--primary);
             padding: 14px;
             border-radius: 14px;
             margin-top: 12px;
@@ -396,13 +420,13 @@
 
         .entry-date {
             font-weight: 700;
-            color: #2c1f2f;
+            color: var(--text-main);
             font-size: 14px;
         }
 
         .entry-info {
             font-size: 13px;
-            color: #8b6a8f;
+            color: var(--text-sub);
             margin-top: 4px;
         }
 
@@ -430,6 +454,29 @@
             transform: rotate(180deg);
         }
 
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .legend-period {
+            background: var(--primary);
+        }
+
+        .legend-fertile {
+            background: var(--color-fertile);
+        }
+
+        .legend-ovulation {
+            background: var(--color-ovulation);
+        }
+
+        .legend-next-period {
+            background: var(--color-next-period);
+        }
+
         #historyContent {
             display: none;
         }
@@ -439,14 +486,14 @@
             text-align: center;
             padding: 20px;
             font-size: 11px;
-            color: #a37b8e;
+            color: var(--text-footer);
             line-height: 1.6;
         }
 
         /* Utilities */
         .hidden { display: none !important; }
-        .error { color: #ff5fb8; font-size: 13px; margin-top: 4px; }
-        .success { color: #4caf50; font-size: 13px; margin-top: 4px; }
+        .error { color: var(--primary); font-size: 13px; margin-top: 4px; }
+        .success { color: var(--success); font-size: 13px; margin-top: 4px; }
 
         /* Responsive */
         @media (max-width: 480px) {
@@ -620,20 +667,20 @@
                 <div id="calendar" class="calendar"></div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; font-size: 12px;">
                     <div style="display: flex; align-items: center; gap: 6px;">
-                        <div style="width: 16px; height: 16px; background: #ff5fb8; border-radius: 4px;"></div>
-                        <span style="color: #8b6a8f;">דימום</span>
+                        <div class="legend-color legend-period"></div>
+                        <span style="color: var(--text-sub);">דימום</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 6px;">
-                        <div style="width: 16px; height: 16px; background: #ffc84d; border-radius: 4px;"></div>
-                        <span style="color: #8b6a8f;">פוריות</span>
+                        <div class="legend-color legend-fertile"></div>
+                        <span style="color: var(--text-sub);">פוריות</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 6px;">
-                        <div style="width: 16px; height: 16px; background: #c084ff; border-radius: 4px;"></div>
-                        <span style="color: #8b6a8f;">ביוץ</span>
+                        <div class="legend-color legend-ovulation"></div>
+                        <span style="color: var(--text-sub);">ביוץ</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 6px;">
-                        <div style="width: 16px; height: 16px; background: #ffb3d9; border-radius: 4px;"></div>
-                        <span style="color: #8b6a8f;">מחזור הבא</span>
+                        <div class="legend-color legend-next-period"></div>
+                        <span style="color: var(--text-sub);">מחזור הבא</span>
                     </div>
                 </div>
             </div>
