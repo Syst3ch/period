@@ -11,13 +11,32 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
+        :root {
+            --primary: #ff5fb8;
+            --primary-light: #ff8ad6;
+            --bg-main: linear-gradient(135deg, #f8f4ff 0%, #ffe8f0 100%);
+            --bg-card: white;
+            --text-main: #2c1f2f;
+            --text-sub: #8b6a8f;
+            --border: #e8d5e8;
+        }
+
+        :root[data-theme="dark"] {
+            --bg-main: linear-gradient(135deg, #1a1a2e 0%, #2d1b3d 100%);
+            --bg-card: #2d2d3d;
+            --text-main: #f0e6f0;
+            --text-sub: #b8a8b8;
+            --border: #3d3d4d;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            background: linear-gradient(135deg, #f8f4ff 0%, #ffe8f0 100%);
-            color: #2c1f2f;
+            background: var(--bg-main);
+            color: var(--text-main);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            transition: background 0.3s ease;
         }
 
         .container { max-width: 480px; width: 100%; margin: auto; flex: 1; }
@@ -247,12 +266,16 @@
 
         /* Card */
         .card {
-            background: white;
+            background: var(--bg-card);
             border-radius: 20px;
             padding: 22px;
             margin-bottom: 16px;
             box-shadow: 0 8px 24px rgba(44, 31, 47, 0.08);
-            border: 1px solid #f0e6f0;
+            border: 1px solid var(--border);
+        }
+
+        :root[data-theme="dark"] .card {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         }
 
         .card-title {
@@ -526,27 +549,55 @@
                     <div id="modeDisplay" class="greeting-sub">מצב: מעקב רגיל</div>
                 </div>
                 <div class="header-actions">
+                    <button id="themeToggle" class="btn-logout" title="切换主题" style="font-size: 16px; padding: 8px 10px;">🌙</button>
                     <button id="logoutBtn" class="btn-logout">התנתקות</button>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-title">
-                    <span>📅 הזנת מחזור חדש</span>
+                    <span>📅 הזנת דימום חדש</span>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">תאריך</label>
+                    <label class="form-label">תאריך התחלה</label>
                     <input type="date" id="date">
                 </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">משך (ימים)</label>
+                        <input type="number" id="duration" min="1" max="14" value="5" style="margin-top: 8px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">עוצמה</label>
+                        <select id="flowIntensity" style="margin-top: 8px;">
+                            <option value="light">קל</option>
+                            <option value="normal" selected>בינוני</option>
+                            <option value="heavy">כבד</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="form-group">
-                    <label class="form-label">משך</label>
-                    <select id="duration">
-                        <option value="3">3 ימים</option>
-                        <option value="4">4 ימים</option>
-                        <option value="5" selected>5 ימים</option>
-                        <option value="6">6 ימים</option>
-                        <option value="7">7 ימים</option>
-                    </select>
+                    <label class="form-label">תסמינים (בחר את כל המתאים)</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+                            <input type="checkbox" name="symptoms" value="cramps"> כאבי בטן
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+                            <input type="checkbox" name="symptoms" value="headache"> כאבי ראש
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+                            <input type="checkbox" name="symptoms" value="mood"> שינויי מצב רוח
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+                            <input type="checkbox" name="symptoms" value="fatigue"> עייפות
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+                            <input type="checkbox" name="symptoms" value="bloating"> התפחות
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+                            <input type="checkbox" name="symptoms" value="acne"> פריחות
+                        </label>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">הערות (אופציונלי)</label>
@@ -587,10 +638,16 @@
                 </div>
             </div>
 
+            <div class="card" id="statsCard" style="display:none;">
+                <div class="card-title">📊 סטטיסטיקה</div>
+                <div id="statsContent" style="font-size: 14px; color: var(--text-sub); line-height: 1.8;"></div>
+            </div>
+
             <div class="card">
                 <div class="card-title">⚙️ הגדרות</div>
                 <button onclick="toggleAppMode()" class="btn btn-secondary" style="margin-top:0;">🔄 החלפת מצב</button>
                 <button onclick="exportData()" class="btn btn-secondary" style="margin-top:10px;">📊 הורדת דוח</button>
+                <button onclick="toggleTheme()" class="btn btn-secondary" style="margin-top:10px;">🌙 מצב חשוך</button>
             </div>
 
             <div class="card">
@@ -619,6 +676,45 @@
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
+
+        // Theme Manager
+        const ThemeManager = {
+            init() {
+                const saved = localStorage.getItem('perioday_theme') || 'light';
+                this.set(saved);
+            },
+            set(theme) {
+                localStorage.setItem('perioday_theme', theme);
+                if (theme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+            },
+            toggle() {
+                const current = localStorage.getItem('perioday_theme') || 'light';
+                this.set(current === 'dark' ? 'light' : 'dark');
+            }
+        };
+
+        // Browser Notifications
+        const Notifications = {
+            requestPermission() {
+                if ('Notification' in window && Notification.permission === 'default') {
+                    Notification.requestPermission();
+                }
+            },
+            send(title, options = {}) {
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification(title, {
+                        icon: '🌸',
+                        badge: '🌸',
+                        tag: 'perioday',
+                        ...options
+                    });
+                }
+            }
+        };
 
         // Toast Notification System
         const Toast = {
@@ -777,6 +873,34 @@
                 return predictions;
             },
 
+            // חשב בדיקות אלרטים
+            checkAlerts(entries) {
+                const alerts = [];
+                if (entries.length === 0) return alerts;
+
+                const lastEntry = entries[0];
+                const lastDate = new Date(lastEntry.date);
+                const cycleLengthDays = this.calculateAverageCycle(entries);
+                const nextPeriod = new Date(lastDate);
+                nextPeriod.setDate(nextPeriod.getDate() + cycleLengthDays);
+                const dayUntilNext = Math.round((nextPeriod - new Date()) / (1000 * 60 * 60 * 24));
+
+                if (dayUntilNext === 3) {
+                    alerts.push({ type: 'alert', message: 'דימום בעוד 3 ימים' });
+                }
+                if (dayUntilNext === 1) {
+                    alerts.push({ type: 'alert', message: 'דימום מחר' });
+                }
+
+                const fertile = this.getFertileWindow(lastDate, cycleLengthDays);
+                const dayUntilFertile = Math.round((fertile.start - new Date()) / (1000 * 60 * 60 * 24));
+                if (dayUntilFertile === 3) {
+                    alerts.push({ type: 'info', message: 'חלון פוריות בעוד 3 ימים' });
+                }
+
+                return alerts;
+            },
+
             // סטטיסטיקה של מחזור
             getCycleStats(entries) {
                 if (entries.length < 2) return null;
@@ -834,7 +958,10 @@
                 AppState.globalData.unshift({
                     ...entry,
                     id: Date.now(),
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
+                    duration: parseInt(entry.duration) || 5,
+                    intensity: entry.intensity || 'normal',
+                    symptoms: entry.symptoms || []
                 });
 
                 return this.persist();
@@ -918,7 +1045,15 @@
 
         // Initialize
         function initApp() {
+            // Init theme and notifications
+            ThemeManager.init();
+            Notifications.requestPermission();
             AppState.init();
+
+            // Set theme toggle icon
+            const isDark = localStorage.getItem('perioday_theme') === 'dark';
+            const themeBtn = document.getElementById('themeToggle');
+            if (themeBtn) themeBtn.textContent = isDark ? '☀️' : '🌙';
 
             // Attach event listeners
             const loginForm = document.getElementById('loginForm');
@@ -1102,6 +1237,62 @@
         function loadData() {
             DataManager.loadEntries();
             render(AppState.globalData);
+            renderStats(AppState.globalData);
+            checkAlerts(AppState.globalData);
+        }
+
+        function renderStats(data) {
+            if (data.length < 2) {
+                document.getElementById('statsCard').style.display = 'none';
+                return;
+            }
+
+            const stats = CycleCalculator.getCycleStats(data);
+            const avgDuration = Math.round(data.slice(0, 6).reduce((sum, e) => sum + (e.duration || 5), 0) / Math.min(6, data.length));
+
+            // Count symptoms
+            const symptomCount = {};
+            data.forEach(e => {
+                (e.symptoms || []).forEach(s => {
+                    symptomCount[s] = (symptomCount[s] || 0) + 1;
+                });
+            });
+
+            const topSymptoms = Object.entries(symptomCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 3)
+                .map(([s]) => s);
+
+            const symptomNames = {
+                'cramps': 'כאבי בטן',
+                'headache': 'כאבי ראש',
+                'mood': 'שינויי מצב',
+                'fatigue': 'עייפות',
+                'bloating': 'התפחות',
+                'acne': 'פריחות'
+            };
+
+            let html = `
+                <div><strong>מחזור ממוצע:</strong> ${stats.avg} ימים (${stats.min}-${stats.max})</div>
+                <div><strong>משך דימום:</strong> כ-${avgDuration} ימים</div>
+                <div><strong>אחוז סדירות:</strong> ${Math.round(((stats.max - stats.min) / stats.avg) * 100) < 20 ? '🟢 סדיר מאוד' : '🟡 ממעיל סדיר'}</div>
+            `;
+
+            if (topSymptoms.length > 0) {
+                html += `<div><strong>תסמינים נפוצים:</strong> ${topSymptoms.map(s => symptomNames[s] || s).join(', ')}</div>`;
+            }
+
+            document.getElementById('statsContent').innerHTML = html;
+            document.getElementById('statsCard').style.display = 'block';
+        }
+
+        function checkAlerts(data) {
+            const alerts = CycleCalculator.checkAlerts(data);
+            alerts.forEach(alert => {
+                if (alert.type === 'alert') {
+                    Notifications.send(alert.message);
+                }
+            });
         }
 
         function render(data) {
@@ -1233,9 +1424,12 @@
             const list = document.getElementById("list");
             list.innerHTML = "";
             if (data.length === 0) {
-                list.innerHTML = '<p style="text-align: center; color: #8b6a8f; padding: 20px;">אין רשומות עדיין</p>';
+                list.innerHTML = '<p style="text-align: center; color: var(--text-sub); padding: 20px;">אין רשומות עדיין</p>';
                 return;
             }
+
+            const intensityEmoji = { 'light': '🟡', 'normal': '🔴', 'heavy': '🔥' };
+
             data.forEach((e) => {
                 const div = document.createElement('div');
                 div.className = 'entry';
@@ -1244,9 +1438,29 @@
                 dateDiv.className = 'entry-date';
                 dateDiv.textContent = new Date(e.date).toLocaleDateString('he-IL');
 
+                const duration = e.duration || 5;
+                const intensity = e.intensity || 'normal';
+                const emoji = intensityEmoji[intensity] || '🔴';
+
+                let info = `${emoji} ${duration} ימים`;
+                if (e.symptoms && e.symptoms.length > 0) {
+                    const symptomEmojis = {
+                        'cramps': '😣',
+                        'headache': '🤕',
+                        'mood': '😔',
+                        'fatigue': '😴',
+                        'bloating': '🫂',
+                        'acne': '🌧️'
+                    };
+                    info += ' • ' + e.symptoms.map(s => symptomEmojis[s] || '').join(' ');
+                }
+                if (e.notes) {
+                    info += ' • ' + e.notes;
+                }
+
                 const infoDiv = document.createElement('div');
                 infoDiv.className = 'entry-info';
-                infoDiv.textContent = `נמשך ${e.duration} ימים${e.notes ? ' • ' + e.notes : ''}`;
+                infoDiv.textContent = info;
 
                 const contentDiv = document.createElement('div');
                 contentDiv.className = 'entry-content';
@@ -1277,8 +1491,12 @@
         // Event Listeners
         document.getElementById('saveBtn').onclick = async () => {
             const date = document.getElementById("date").value;
-            const duration = parseInt(document.getElementById("duration").value);
+            const duration = document.getElementById("duration").value;
+            const intensity = document.getElementById("flowIntensity").value;
             const notes = document.getElementById("notes").value.trim();
+
+            const symptoms = Array.from(document.querySelectorAll('input[name="symptoms"]:checked'))
+                .map(cb => cb.value);
 
             const dateError = Validator.date(date);
             if (dateError) {
@@ -1286,13 +1504,16 @@
                 return;
             }
 
-            if (await DataManager.saveEntry({ date, duration, notes })) {
+            if (await DataManager.saveEntry({ date, duration, intensity, notes, symptoms })) {
                 loadData();
                 Toast.show('רשומה נשמרה בהצלחה ✨', 'success');
+                Notifications.send('דימום נרשם בהצלחה', { body: 'נתונים שלך עודכנו' });
 
                 document.getElementById("date").value = "";
                 document.getElementById("notes").value = "";
                 document.getElementById("duration").value = "5";
+                document.getElementById("flowIntensity").value = "normal";
+                document.querySelectorAll('input[name="symptoms"]').forEach(cb => cb.checked = false);
             } else {
                 Toast.show('שגיאה בשמירה', 'error');
             }
@@ -1314,6 +1535,14 @@
         document.getElementById("nextMonth").onclick = () => {
             AppState.viewDate.setMonth(AppState.viewDate.getMonth() + 1);
             loadData();
+        };
+
+        window.toggleTheme = () => {
+            ThemeManager.toggle();
+            const icon = document.getElementById('themeToggle');
+            const isDark = localStorage.getItem('perioday_theme') === 'dark';
+            icon.textContent = isDark ? '☀️' : '🌙';
+            Toast.show(isDark ? 'מצב חשוך מופעל' : 'מצב בהיר מופעל', 'success');
         };
 
         window.toggleHistory = () => {
