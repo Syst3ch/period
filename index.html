@@ -326,14 +326,32 @@
             font-weight: 700;
         }
 
+        .calendar-day.fertile {
+            background: #ffc84d;
+            color: #8b4513;
+            font-weight: 600;
+        }
+
         .calendar-day.ovulation {
             background: #c084ff;
             color: white;
             font-weight: 700;
+            box-shadow: inset 0 0 0 2px #ff5fb8;
+        }
+
+        .calendar-day.next-period {
+            background: #ffb3d9;
+            color: #8b3a62;
+            font-weight: 600;
         }
 
         .calendar-day.today {
             border: 2px solid #ff5fb8;
+        }
+
+        .calendar-day.today.period {
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #ff5fb8;
         }
 
         /* Entry */
@@ -549,6 +567,24 @@
                     <button id="prevMonth" style="border:0; background:0; font-size:18px; cursor:pointer;">◀️</button>
                 </div>
                 <div id="calendar" class="calendar"></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; font-size: 12px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="width: 16px; height: 16px; background: #ff5fb8; border-radius: 4px;"></div>
+                        <span style="color: #8b6a8f;">דמם</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="width: 16px; height: 16px; background: #ffc84d; border-radius: 4px;"></div>
+                        <span style="color: #8b6a8f;">פוריות</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="width: 16px; height: 16px; background: #c084ff; border-radius: 4px;"></div>
+                        <span style="color: #8b6a8f;">ביוץ</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="width: 16px; height: 16px; background: #ffb3d9; border-radius: 4px;"></div>
+                        <span style="color: #8b6a8f;">מחזור הבא</span>
+                    </div>
+                </div>
             </div>
 
             <div class="card">
@@ -667,6 +703,99 @@
                     limit: 5120,
                     percent: ((total / 1024 / 5120) * 100).toFixed(0)
                 };
+            }
+        };
+
+        // Cycle Calculator Module
+        const CycleCalculator = {
+            // חשב ממוצע מחזור מדויק
+            calculateAverageCycle(entries) {
+                if (entries.length < 2) return 28; // default cycle
+
+                const cycles = [];
+                for (let i = 0; i < entries.length - 1; i++) {
+                    const date1 = new Date(entries[i].date);
+                    const date2 = new Date(entries[i + 1].date);
+                    const diff = Math.round((date1 - date2) / (1000 * 60 * 60 * 24));
+
+                    // בדוק שהמחזור סביר (20-45 ימים)
+                    if (diff >= 20 && diff <= 45) {
+                        cycles.push(diff);
+                    }
+                }
+
+                if (cycles.length === 0) return 28;
+                const sum = cycles.reduce((a, b) => a + b, 0);
+                return Math.round(sum / cycles.length);
+            },
+
+            // חשב ביוץ (14 ימים לפני המחזור הבא)
+            calculateOvulation(lastPeriodDate, cycleLengthDays) {
+                const ovulation = new Date(lastPeriodDate);
+                ovulation.setDate(ovulation.getDate() + cycleLengthDays - 14);
+                return ovulation;
+            },
+
+            // חלון פוריות (5 ימים לפני ביוץ עד ביוץ)
+            getFertileWindow(lastPeriodDate, cycleLengthDays) {
+                const ovulation = this.calculateOvulation(lastPeriodDate, cycleLengthDays);
+                const windowStart = new Date(ovulation);
+                windowStart.setDate(windowStart.getDate() - 5);
+
+                return {
+                    start: windowStart,
+                    end: ovulation,
+                    ovulationDay: ovulation
+                };
+            },
+
+            // המחזור הבא
+            getNextPeriodDate(lastPeriodDate, cycleLengthDays) {
+                const next = new Date(lastPeriodDate);
+                next.setDate(next.getDate() + cycleLengthDays);
+                return next;
+            },
+
+            // דיווחי הבאים ל-6 חודשים
+            getUpcomingPeriods(entries, count = 6) {
+                if (entries.length === 0) return [];
+
+                const lastEntry = entries[0];
+                const lastDate = new Date(lastEntry.date);
+                const cycleLengthDays = this.calculateAverageCycle(entries);
+
+                const predictions = [];
+                for (let i = 1; i <= count; i++) {
+                    const predictedDate = new Date(lastDate);
+                    predictedDate.setDate(predictedDate.getDate() + (cycleLengthDays * i));
+                    predictions.push({
+                        date: predictedDate,
+                        cycle: i,
+                        days_until: Math.round((predictedDate - new Date()) / (1000 * 60 * 60 * 24))
+                    });
+                }
+                return predictions;
+            },
+
+            // סטטיסטיקה של מחזור
+            getCycleStats(entries) {
+                if (entries.length < 2) return null;
+
+                const cycles = [];
+                for (let i = 0; i < entries.length - 1; i++) {
+                    const date1 = new Date(entries[i].date);
+                    const date2 = new Date(entries[i + 1].date);
+                    const diff = Math.round((date1 - date2) / (1000 * 60 * 60 * 24));
+                    if (diff >= 20 && diff <= 45) cycles.push(diff);
+                }
+
+                if (cycles.length === 0) return null;
+
+                const avg = Math.round(cycles.reduce((a, b) => a + b) / cycles.length);
+                const min = Math.min(...cycles);
+                const max = Math.max(...cycles);
+
+                return { avg, min, max, count: cycles.length };
             }
         };
 
@@ -976,23 +1105,25 @@
         }
 
         function render(data) {
-            let nextPeriod = null;
-            let ovulationDate = null;
+            if (data.length === 0) {
+                document.getElementById("predCard").style.display = "none";
+                renderCalendar([], null, null, null);
+                renderHistory([]);
+                return;
+            }
 
+            const cycleLengthDays = CycleCalculator.calculateAverageCycle(data);
+            const lastPeriodDate = new Date(data[0].date);
+            const nextPeriod = CycleCalculator.getNextPeriodDate(lastPeriodDate, cycleLengthDays);
+            const fertileWindow = CycleCalculator.getFertileWindow(lastPeriodDate, cycleLengthDays);
+            const ovulationDate = fertileWindow.ovulationDay;
+
+            // Show prediction card
             if (data.length >= 2) {
-                document.getElementById("predCard").style.display = "block";
-                let gaps = [];
-                for (let i = 0; i < data.length - 1; i++) {
-                    let diff = Math.round((new Date(data[i].date) - new Date(data[i+1].date)) / 86400000);
-                    if (diff > 20 && diff < 45) gaps.push(diff);
-                }
-                const avgCycle = gaps.length ? Math.round(gaps.reduce((a,b)=>a+b)/gaps.length) : 28;
-                nextPeriod = new Date(data[0].date);
-                nextPeriod.setDate(nextPeriod.getDate() + avgCycle);
-                ovulationDate = new Date(nextPeriod);
-                ovulationDate.setDate(ovulationDate.getDate() - 14);
+                const stats = CycleCalculator.getCycleStats(data);
+                const upcomingPeriods = CycleCalculator.getUpcomingPeriods(data, 3);
 
-                document.getElementById("prediction").innerHTML = `
+                let predictionHTML = `
                     <div class="stat-box">
                         <div class="stat-label">מחזור הבא</div>
                         <div class="stat-value">${nextPeriod.toLocaleDateString('he-IL')}</div>
@@ -1001,16 +1132,51 @@
                         <div class="stat-label">ביוץ משוער</div>
                         <div class="stat-value">${ovulationDate.toLocaleDateString('he-IL')}</div>
                     </div>
+                    <div class="stat-box">
+                        <div class="stat-label">אורך מחזור</div>
+                        <div class="stat-value">${cycleLengthDays} ימים</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">חלון פוריות</div>
+                        <div class="stat-value">${fertileWindow.start.getDate()} - ${fertileWindow.end.getDate()}</div>
+                    </div>
                 `;
+
+                if (stats) {
+                    predictionHTML += `
+                        <div class="stat-box" style="grid-column: 1 / -1;">
+                            <div class="stat-label">סטטיסטיקה (${stats.count} מחזורים)</div>
+                            <div style="font-size: 13px; color: #8b6a8f; margin-top: 8px;">
+                                ממוצע: ${stats.avg} ימים | טווח: ${stats.min}-${stats.max} ימים
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (upcomingPeriods.length > 0) {
+                    predictionHTML += `
+                        <div class="stat-box" style="grid-column: 1 / -1;">
+                            <div class="stat-label">תחזוקות הבאות (6 חודשים)</div>
+                            <div style="font-size: 12px; color: #8b6a8f; margin-top: 8px; line-height: 1.8;">
+                                ${upcomingPeriods.map((p, i) => `
+                                    <div>חודש ${p.cycle}: ${p.date.toLocaleDateString('he-IL')} (${p.days_until > 0 ? 'בעוד ' + p.days_until + ' ימים' : 'עבר'})</div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                document.getElementById("prediction").innerHTML = predictionHTML;
+                document.getElementById("predCard").style.display = "block";
             } else {
                 document.getElementById("predCard").style.display = "none";
             }
 
-            renderCalendar(data, nextPeriod, ovulationDate);
+            renderCalendar(data, nextPeriod, ovulationDate, fertileWindow);
             renderHistory(data);
         }
 
-        function renderCalendar(data, nextPeriod, ovulationDate) {
+        function renderCalendar(data, nextPeriod, ovulationDate, fertileWindow) {
             const cal = document.getElementById("calendar");
             const year = AppState.viewDate.getFullYear();
             const month = AppState.viewDate.getMonth();
@@ -1027,17 +1193,36 @@
                 const curr = new Date(year, month, d);
                 let cls = (new Date().toDateString() === curr.toDateString()) ? "calendar-day today" : "calendar-day";
 
+                // Check for period days
+                let isPeriod = false;
                 for (const e of data) {
                     const start = new Date(e.date);
                     const end = new Date(start);
                     end.setDate(end.getDate() + e.duration - 1);
                     if (curr >= start && curr <= end) {
                         cls += " period";
+                        isPeriod = true;
                         break;
                     }
                 }
 
-                if (ovulationDate && curr.toDateString() === ovulationDate.toDateString()) cls += " ovulation";
+                // Check for fertile window (only if not a period day)
+                if (!isPeriod && fertileWindow) {
+                    if (curr >= fertileWindow.start && curr <= fertileWindow.end) {
+                        cls += " fertile";
+                    }
+                }
+
+                // Check for ovulation day
+                if (ovulationDate && curr.toDateString() === ovulationDate.toDateString()) {
+                    cls += " ovulation";
+                }
+
+                // Check for next period prediction
+                if (nextPeriod && curr.toDateString() === nextPeriod.toDateString()) {
+                    cls += " next-period";
+                }
+
                 html += `<div class="${cls}">${d}</div>`;
             }
 
